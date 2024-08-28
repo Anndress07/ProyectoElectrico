@@ -23,7 +23,7 @@ def main():
     #print(y)
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10, test_size=0.5)
-    #print("X TRAIN: ", X_train)
+    print("X TRAIN: ", X_train)
     #print("X TEST:", X_test)
 
 
@@ -56,9 +56,10 @@ def main():
     #print(dtr.feature_importances_)
     features = pd.DataFrame(dtr.feature_importances_, index=X.columns)
     features.head(16).plot(kind='bar')
+    plt.show()
 
     tree.plot_tree(dtr)
-    plt.show()
+
     return dtr, X_test
 
 
@@ -131,7 +132,7 @@ def treeStructure(dtr, X_test):
             continue
 
         # check if value of the split feature for sample 0 is below threshold
-        if X_test[sample_id, feature[node_id]] <= threshold[node_id]:
+        if X_test.iloc[sample_id, feature[node_id]] <= threshold[node_id]:
             threshold_sign = "<="
         else:
             threshold_sign = ">"
@@ -142,7 +143,7 @@ def treeStructure(dtr, X_test):
                 node=node_id,
                 sample=sample_id,
                 feature=feature[node_id],
-                value=X_test[sample_id, feature[node_id]],
+                value=X_test.iloc[sample_id, feature[node_id]],
                 inequality=threshold_sign,
                 threshold=threshold[node_id],
             )
