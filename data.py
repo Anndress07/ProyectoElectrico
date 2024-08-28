@@ -13,6 +13,8 @@ def data(data):
     df10 = df10.drop('Drive_cell_type', axis=1)  # Borra Drive_cell_type
     df10 = df10.drop('Sink_cell_type', axis=1)  # Borra Sink_cell_type
     df10 = df10.drop(df10.columns[16:159], axis=1)  # Borra todos los tipos de compuerta
+    #df10 = df10.dropna(subset=['Label Delay'])
+    df10 = df10.dropna() # BOTAR TODAS LAS FILAS CON UN VALOR NaN
     #print(df10)
     df10.to_csv('treated.csv', index=False)
     print(df10.isna().sum())
@@ -83,6 +85,11 @@ def plotall(data):
     # Show the plot
     plt.show()
 
-#data("train.csv")
-filtering('treated.csv')
+data("train.csv")
+#filtering('treated.csv')
 #plotall('treated.csv')
+
+
+"""
+
+"""
