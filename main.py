@@ -165,8 +165,14 @@ def classification(dtr, total_leaves, X_test,y_test):
 
     leaf_params_dict = {}
     leaf_result_dict = {}
+    nodo_prueba_x = []
+    nodo_prueba_y = []
 
     for leaf_node in range(len(X_test)):
+        if leaf_sample_list[leaf_node] == 767:
+            nodo_prueba_x.append(X_test.iloc[leaf_node].tolist())
+            nodo_prueba_y.append(y_test.iloc[leaf_node].tolist())
+
         leaf_id_value = leaf_sample_list[leaf_node]
         if leaf_id_value not in leaf_params_dict:
             leaf_params_dict[leaf_id_value] = []
@@ -178,8 +184,12 @@ def classification(dtr, total_leaves, X_test,y_test):
         leaf_params_dict[leaf_id_value].append(X_test.iloc[leaf_node].tolist())
         leaf_result_dict[leaf_id_value].append(y_test.iloc[leaf_node])
 
+    #nodo_prueba_x = pd.DataFrame(nodo_prueba_x)
 
+    #nodo_prueba_x['16'] = nodo_prueba_y
+    #print(f"nodo_prueba_x: {nodo_prueba_x}")
     #print(leaf_params_dict)
+    #nodo_prueba_x.to_csv('prueba_lnr.csv', index=False)
 
     #leaf_params_dict[767].append(X_test.iloc[2].tolist())
     #leaf_result_dict[767].append(y_test.iloc[2])
@@ -190,6 +200,7 @@ def classification(dtr, total_leaves, X_test,y_test):
 def regressor(leaf_sample_list, total_leaves, leaf_params_dict, leaf_result_dict):
     #print(leaf_params_dict)
     LR_results = []
+    #for node in leaf_sample_list:
     for node in leaf_sample_list[:10]:
         X_LR = leaf_params_dict[node]
         y_LR = leaf_result_dict[node]
@@ -209,9 +220,12 @@ def regressor(leaf_sample_list, total_leaves, leaf_params_dict, leaf_result_dict
                       "MAE: ": mean_squared_error(y_LR_test, LR_pred)
                       }
         LR_results.append(resultado_LR)
-
+    score_results = []
     for item in LR_results:
         print(item['Score: '])
+        score_results.append(item['Score: '])
+        plt.plot(score_results)
+    plt.show()
     #print(LR_results)
 
     return
