@@ -5,10 +5,9 @@ from matplotlib.ticker import StrMethodFormatter
 from sklearn.model_selection import train_test_split
 from sklearn import tree
 from sklearn.tree import DecisionTreeRegressor
+from sklearn import linear_model
 
-from sklearn.metrics import mean_absolute_error
-from sklearn.metrics import mean_squared_error
-from sklearn.metrics import r2_score
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.metrics import precision_score
 
 
@@ -23,6 +22,8 @@ def main():
     #print(y)
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10, test_size=0.5)
+    #X_test.to_csv('X_test.csv', index=False)
+    #y_test.to_csv('y_test.csv', index=False)
     #print("X TRAIN: ", X_train)
     #print("X TEST:", X_test)
 
@@ -61,7 +62,7 @@ def main():
     #tree.plot_tree(dtr)
     #plt.show()
 
-    return dtr, X_test
+    return dtr, X_test, y_test
 
 
 
@@ -157,40 +158,69 @@ def treeStructure(dtr, X_test, enable):
     return total_leaf_nodes
 
 
-def classification(dtr, total_leaves, X_test):
+def classification(dtr, total_leaves, X_test,y_test):
     leaf_sample_list = dtr.apply(X_test)
     print(f"leaf_sample_list len: {len(leaf_sample_list)}")
     print(f"leaf_sample_list: {leaf_sample_list}")
 
-    leaf_dict = {}
+    leaf_params_dict = {}
+    leaf_result_dict = {}
 
     for leaf_node in range(len(X_test)):
         leaf_id_value = leaf_sample_list[leaf_node]
-        if leaf_id_value not in leaf_dict:
-            leaf_dict[leaf_id_value] = []
+        if leaf_id_value not in leaf_params_dict:
+            leaf_params_dict[leaf_id_value] = []
+        if leaf_id_value not in leaf_result_dict:
+            leaf_result_dict[leaf_id_value] = []
 
 
-        #leaf_dict[leaf_id_value].append(X_test[leaf_node])
-        leaf_dict[leaf_id_value].append(X_test.iloc[leaf_node].tolist())
-    #print(leaf_dict)
+        #leaf_params_dict[leaf_id_value].append(X_test[leaf_node])
+        leaf_params_dict[leaf_id_value].append(X_test.iloc[leaf_node].tolist())
+        leaf_result_dict[leaf_id_value].append(y_test.iloc[leaf_node])
 
-    #leaf_dict[767].append(X_test.iloc[3].tolist())
-    #print(type(leaf_dict[767]))
-    #print(leaf_dict[767])
-    return leaf_sample_list, leaf_dict
 
-def regressor(leaf_sample_list, total_leaves, leaf_dict):
+    #print(leaf_params_dict)
 
-    for node in leaf_sample_list[:1]:
-        X_LR_test = leaf_dict[node]
-        print(X_LR_test)
+    #leaf_params_dict[767].append(X_test.iloc[2].tolist())
+    #leaf_result_dict[767].append(y_test.iloc[2])
+    #print(type(leaf_params_dict[767]))
+    #print(leaf_params_dict[767])
+    return leaf_sample_list, leaf_params_dict,leaf_result_dict
+
+def regressor(leaf_sample_list, total_leaves, leaf_params_dict, leaf_result_dict):
+    #print(leaf_params_dict)
+    LR_results = []
+    for node in leaf_sample_list[:10]:
+        X_LR = leaf_params_dict[node]
+        y_LR = leaf_result_dict[node]
+        #print(f"X_LR_test:  {X_LR}")
+        #print(f"y_LR_test:  {y_LR}")
+
+        X_LR_train, X_LR_test, y_LR_train, y_LR_test = train_test_split(X_LR, y_LR, test_size=0.2, random_state=1)
+        LR = linear_model.LinearRegression()
+
+        LR.fit(X_LR_train, y_LR_train)
+        LR_pred = LR.predict(X_LR_test)
+
+        resultado_LR = {"Model: ": node,
+                      #"Coefficients: ": LR.coef_,
+                      "Intercept: ": LR.intercept_,
+                      "Score: ": r2_score(y_LR_test, LR_pred),
+                      "MAE: ": mean_squared_error(y_LR_test, LR_pred)
+                      }
+        LR_results.append(resultado_LR)
+
+    for item in LR_results:
+        print(item['Score: '])
+    #print(LR_results)
+
     return
 
 
 if __name__ == "__main__":
-    dtr, X_test = main()
+    dtr, X_test,y_test = main()
     total_leaves = treeStructure(dtr, X_test, 0)
     print("total_leaves: ", total_leaves)
-    leaf_sample_list, leaf_dict = classification(dtr, total_leaves, X_test)
-    regressor(leaf_sample_list, total_leaves, leaf_dict)
+    leaf_sample_list, leaf_params_dict, leaf_result_dict = classification(dtr, total_leaves, X_test,y_test)
+    regressor(leaf_sample_list, total_leaves, leaf_params_dict, leaf_result_dict)
 
