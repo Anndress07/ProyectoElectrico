@@ -7,7 +7,7 @@ from sklearn import tree
 from sklearn.tree import DecisionTreeRegressor
 from sklearn import linear_model
 
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, root_mean_squared_error
 from sklearn.metrics import precision_score
 
 
@@ -212,19 +212,27 @@ def regressor(leaf_sample_list, total_leaves, leaf_params_dict, leaf_result_dict
 
         LR.fit(X_LR_train, y_LR_train)
         LR_pred = LR.predict(X_LR_test)
-
+        print(f"shape X_LR {X_LR_test[:3]}")
+        print(f"shape y_LR {y_LR_test}")
+        # TODO: Puede que hayan hojas que tenga un solo sample, esto puede provocar errores en el R2
+        # TODO: Calcular error entre la predicción de ML y real, y calcular error entre "Delay" y "Label Delay"
+        # (prediccion de openlane) para ver si la del modelo puede ser menor a la de openlane
         resultado_LR = {"Model: ": node,
                       #"Coefficients: ": LR.coef_,
                       "Intercept: ": LR.intercept_,
-                      "Score: ": r2_score(y_LR_test, LR_pred),
-                      "MAE: ": mean_squared_error(y_LR_test, LR_pred)
+                      #"Score: ": r2_score(y_LR_test, LR_pred),
+                      "RMSE ML: ": root_mean_squared_error(y_LR_test, LR_pred),
+                      "RMSE OpenLane: ": root_mean_squared_error(X_LR_test[:3], y_LR_test)
                       }
         LR_results.append(resultado_LR)
     score_results = []
+    mse_results = []
     for item in LR_results:
-        print(item['Score: '])
-        score_results.append(item['Score: '])
-        plt.plot(score_results)
+        #print(item['Score: '])
+        score_results.append(item['RMSE ML: '])
+        mse_results.append(item['RMSE OpenLane: '])
+        plt.plot(score_results, color="red", label="RMSE ML")
+        plt.plot(mse_results, color="blue", label="RMSE OpenLane")
     plt.show()
     #print(LR_results)
 
