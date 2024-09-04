@@ -23,12 +23,12 @@ def main():
     #print(y)
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10, test_size=0.5)
-    print("X TRAIN: ", X_train)
+    #print("X TRAIN: ", X_train)
     #print("X TEST:", X_test)
 
 
 
-    dtr = DecisionTreeRegressor(max_depth=9, max_features=15, max_leaf_nodes=60)
+    dtr = DecisionTreeRegressor(max_depth=9, max_features=15, random_state=10)
     #print(dtr.get_params())
     dtr.fit(X_train, y_train)
 
@@ -54,17 +54,18 @@ def main():
     """
 
     #print(dtr.feature_importances_)
-    features = pd.DataFrame(dtr.feature_importances_, index=X.columns)
-    features.head(16).plot(kind='bar')
-    plt.show()
+    #features = pd.DataFrame(dtr.feature_importances_, index=X.columns)
+    #features.head(16).plot(kind='bar')
+    #plt.show()
 
-    tree.plot_tree(dtr)
+    #tree.plot_tree(dtr)
+    #plt.show()
 
     return dtr, X_test
 
 
 
-def treeStructure(dtr, X_test):
+def treeStructure(dtr, X_test, enable):
     n_nodes = dtr.tree_.node_count
     children_left = dtr.tree_.children_left
     children_right = dtr.tree_.children_right
@@ -72,9 +73,11 @@ def treeStructure(dtr, X_test):
     threshold = dtr.tree_.threshold
     values = dtr.tree_.value
 
+
     node_depth = np.zeros(shape=n_nodes, dtype=np.int64)
     is_leaves = np.zeros(shape=n_nodes, dtype=bool)
     stack = [(0, 0)]  # start with the root node id (0) and its depth (0)
+    total_leaf_nodes = 0
     while len(stack) > 0:
         # `pop` ensures each node is only visited once
         node_id, depth = stack.pop()
@@ -90,32 +93,34 @@ def treeStructure(dtr, X_test):
             stack.append((children_right[node_id], depth + 1))
         else:
             is_leaves[node_id] = True
+            total_leaf_nodes = total_leaf_nodes + 1
 
     print(
         "The binary tree structure has {n} nodes and has "
         "the following tree structure:\n".format(n=n_nodes)
     )
-    for i in range(n_nodes):
-        if is_leaves[i]:
-            print(
-                "{space}node={node} is a leaf node with value={value}.".format(
-                    space=node_depth[i] * "\t", node=i, value=values[i]
+    if (enable == 1 or enable == 3):
+        for i in range(n_nodes):
+            if is_leaves[i]:
+                print(
+                    "{space}node={node} is a leaf node with value={value}.".format(
+                        space=node_depth[i] * "\t", node=i, value=values[i]
+                    )
                 )
-            )
-        else:
-            print(
-                "{space}node={node} is a split node with value={value}: "
-                "go to node {left} if X[:, {feature}] <= {threshold} "
-                "else to node {right}.".format(
-                    space=node_depth[i] * "\t",
-                    node=i,
-                    left=children_left[i],
-                    feature=feature[i],
-                    threshold=threshold[i],
-                    right=children_right[i],
-                    value=values[i],
+            else:
+                print(
+                    "{space}node={node} is a split node with value={value}: "
+                    "go to node {left} if X[:, {feature}] <= {threshold} "
+                    "else to node {right}.".format(
+                        space=node_depth[i] * "\t",
+                        node=i,
+                        left=children_left[i],
+                        feature=feature[i],
+                        threshold=threshold[i],
+                        right=children_right[i],
+                        value=values[i],
+                    )
                 )
-            )
     node_indicator = dtr.decision_path(X_test)
     leaf_id = dtr.apply(X_test)
 
@@ -124,33 +129,68 @@ def treeStructure(dtr, X_test):
     node_index = node_indicator.indices[
                  node_indicator.indptr[sample_id]: node_indicator.indptr[sample_id + 1]
                  ]
+    if (enable == 2 or enable == 3):
+        print("Rules used to predict sample {id}:\n".format(id=sample_id))
+        for node_id in node_index:
+            # continue to the next node if it is a leaf node
+            if leaf_id[sample_id] == node_id:
+                continue
 
-    print("Rules used to predict sample {id}:\n".format(id=sample_id))
-    for node_id in node_index:
-        # continue to the next node if it is a leaf node
-        if leaf_id[sample_id] == node_id:
-            continue
+            # check if value of the split feature for sample 0 is below threshold
+            if X_test.iloc[sample_id, feature[node_id]] <= threshold[node_id]:
+                threshold_sign = "<="
+            else:
+                threshold_sign = ">"
 
-        # check if value of the split feature for sample 0 is below threshold
-        if X_test.iloc[sample_id, feature[node_id]] <= threshold[node_id]:
-            threshold_sign = "<="
-        else:
-            threshold_sign = ">"
-
-        print(
-            "decision node {node} : (X_test[{sample}, {feature}] = {value}) "
-            "{inequality} {threshold})".format(
-                node=node_id,
-                sample=sample_id,
-                feature=feature[node_id],
-                value=X_test.iloc[sample_id, feature[node_id]],
-                inequality=threshold_sign,
-                threshold=threshold[node_id],
+            print(
+                "decision node {node} : (X_test[{sample}, {feature}] = {value}) "
+                "{inequality} {threshold})".format(
+                    node=node_id,
+                    sample=sample_id,
+                    feature=feature[node_id],
+                    value=X_test.iloc[sample_id, feature[node_id]],
+                    inequality=threshold_sign,
+                    threshold=threshold[node_id],
+                )
             )
-        )
+
+    return total_leaf_nodes
+
+
+def classification(dtr, total_leaves, X_test):
+    leaf_sample_list = dtr.apply(X_test)
+    print(f"leaf_sample_list len: {len(leaf_sample_list)}")
+    print(f"leaf_sample_list: {leaf_sample_list}")
+
+    leaf_dict = {}
+
+    for leaf_node in range(len(X_test)):
+        leaf_id_value = leaf_sample_list[leaf_node]
+        if leaf_id_value not in leaf_dict:
+            leaf_dict[leaf_id_value] = []
+
+
+        #leaf_dict[leaf_id_value].append(X_test[leaf_node])
+        leaf_dict[leaf_id_value].append(X_test.iloc[leaf_node].tolist())
+    #print(leaf_dict)
+
+    #leaf_dict[767].append(X_test.iloc[3].tolist())
+    #print(type(leaf_dict[767]))
+    #print(leaf_dict[767])
+    return leaf_sample_list, leaf_dict
+
+def regressor(leaf_sample_list, total_leaves, leaf_dict):
+
+    for node in leaf_sample_list[:1]:
+        X_LR_test = leaf_dict[node]
+        print(X_LR_test)
+    return
 
 
 if __name__ == "__main__":
     dtr, X_test = main()
-    treeStructure(dtr, X_test)
+    total_leaves = treeStructure(dtr, X_test, 0)
+    print("total_leaves: ", total_leaves)
+    leaf_sample_list, leaf_dict = classification(dtr, total_leaves, X_test)
+    regressor(leaf_sample_list, total_leaves, leaf_dict)
 
