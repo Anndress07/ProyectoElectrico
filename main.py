@@ -201,40 +201,85 @@ def regressor(leaf_sample_list, total_leaves, leaf_params_dict, leaf_result_dict
     #print(leaf_params_dict)
     LR_results = []
     #for node in leaf_sample_list:
-    for node in leaf_sample_list[:10]:
-        X_LR = leaf_params_dict[node]
-        y_LR = leaf_result_dict[node]
-        #print(f"X_LR_test:  {X_LR}")
-        #print(f"y_LR_test:  {y_LR}")
+    # print(f"len sample {len(leaf_sample_list)}")
+    # for key,value in leaf_params_dict.items():
+    #     print(f"Key: {key}, Number of lists: {len(value)}")
+    #     #print(f"\t\t\t\t value: {value}")
+    # return
+    counter = 1
+    for key,val in leaf_params_dict.items():
+        print(f"Executing n#{counter} out of {len(leaf_params_dict)}")
+        print(f"Node ID: {key}")
+        counter = counter + 1
+        # if counter > 10:
+        #     break
+        if (len(val) > 1):
+            X_LR = leaf_params_dict[key]
+            #print(X_LR)
+            y_LR = leaf_result_dict[key]
+            #print(f"Nodo: {node}, len: {np.shape(leaf_params_dict[node])}")
+            #print(f"X_LR_test:  {X_LR}")
+            #print(f"y_LR_test:  {y_LR}")
 
-        X_LR_train, X_LR_test, y_LR_train, y_LR_test = train_test_split(X_LR, y_LR, test_size=0.2, random_state=1)
-        LR = linear_model.LinearRegression()
+            X_LR_train, X_LR_test, y_LR_train, y_LR_test = train_test_split(X_LR, y_LR, test_size=0.2, random_state=1)
+            LR = linear_model.LinearRegression()
+            OPL_delay = [sublist[3] for sublist in X_LR_test]
+            #print(f"columna 3{OPL_delay}")
+            LR.fit(X_LR_train, y_LR_train)
+            LR_pred = LR.predict(X_LR_test)
+            #print(f"shape X_LR {X_LR_test[:3]}")
+            #print(f"shape y_LR {y_LR_test}")
+            # TODO: Puede que hayan hojas que tenga un solo sample, esto puede provocar errores en el R2
+            # TODO: Calcular error entre la predicción de ML y real, y calcular error entre "Delay" y "Label Delay"
+            # (prediccion de openlane) para ver si la del modelo puede ser menor a la de openlane
+            resultado_LR = {"Model: ": key,
+                          #"Coefficients: ": LR.coef_,
+                          #"Intercept: ": LR.intercept_,
+                          #"Score: ": r2_score(y_LR_test, LR_pred),
+                          "RMSE ML: ": root_mean_squared_error(y_LR_test, LR_pred),
+                          "RMSE OpenLane: ": root_mean_squared_error(OPL_delay, y_LR_test)
+                          }
+            LR_results.append(resultado_LR)
 
-        LR.fit(X_LR_train, y_LR_train)
-        LR_pred = LR.predict(X_LR_test)
-        print(f"shape X_LR {X_LR_test[:3]}")
-        print(f"shape y_LR {y_LR_test}")
-        # TODO: Puede que hayan hojas que tenga un solo sample, esto puede provocar errores en el R2
-        # TODO: Calcular error entre la predicción de ML y real, y calcular error entre "Delay" y "Label Delay"
-        # (prediccion de openlane) para ver si la del modelo puede ser menor a la de openlane
-        resultado_LR = {"Model: ": node,
-                      #"Coefficients: ": LR.coef_,
-                      "Intercept: ": LR.intercept_,
-                      #"Score: ": r2_score(y_LR_test, LR_pred),
-                      "RMSE ML: ": root_mean_squared_error(y_LR_test, LR_pred),
-                      "RMSE OpenLane: ": root_mean_squared_error(X_LR_test[:3], y_LR_test)
-                      }
-        LR_results.append(resultado_LR)
+    #print(LR_results)
+
     score_results = []
     mse_results = []
     for item in LR_results:
-        #print(item['Score: '])
-        score_results.append(item['RMSE ML: '])
+        # if (item['RMSE ML: '] > 10):
+        #print(item['RMSE ML: '])
+        if (item['RMSE ML: ']) < 10:
+            score_results.append(item['RMSE ML: '])
         mse_results.append(item['RMSE OpenLane: '])
-        plt.plot(score_results, color="red", label="RMSE ML")
-        plt.plot(mse_results, color="blue", label="RMSE OpenLane")
-    plt.show()
+        #mse_results.append(item['RMSE OpenLane: '])
+    print(f"The ML error is: {sum(score_results) / len(score_results)}")
+    print(f"The OPL error is: {sum(mse_results) / len(mse_results)}")
+    #plt.plot(score_results, color="red", label="RMSE ML")
+    #plt.plot(mse_results, color="blue", label="RMSE OpenLane")
+    #plt.show()
     #print(LR_results)
+
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(12, 6))
+
+    # Plot the first graph on the first subplot
+    ax1.plot(score_results, color="red", label="RMSE ML 1")
+    ax1.set_title("Plot 1")
+    ax1.legend()
+
+    # Plot the second graph on the second subplot
+    ax2.plot(mse_results, color="blue", label="RMSE OpenLane: ")
+    ax2.set_title("Plot 2")
+    ax2.legend()
+
+    ax3.plot(score_results, color="red", label="RMSE ML 1")
+    ax3.plot(mse_results, color="blue", label="RMSE OpenLane: ")
+    ax3.set_title("Plot 3")
+    ax3.legend()
+    # Adjust layout to prevent overlap
+    plt.tight_layout()
+
+    # Show the plots
+    plt.show()
 
     return
 
