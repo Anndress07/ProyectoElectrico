@@ -169,9 +169,9 @@ def classification(dtr, total_leaves, X_test,y_test):
     nodo_prueba_y = []
 
     for leaf_node in range(len(X_test)):
-        if leaf_sample_list[leaf_node] == 767:
-            nodo_prueba_x.append(X_test.iloc[leaf_node].tolist())
-            nodo_prueba_y.append(y_test.iloc[leaf_node].tolist())
+        # if leaf_sample_list[leaf_node] == 767:
+        #     nodo_prueba_x.append(X_test.iloc[leaf_node].tolist())
+        #     nodo_prueba_y.append(y_test.iloc[leaf_node].tolist())
 
         leaf_id_value = leaf_sample_list[leaf_node]
         if leaf_id_value not in leaf_params_dict:
@@ -197,7 +197,8 @@ def classification(dtr, total_leaves, X_test,y_test):
     #print(leaf_params_dict[767])
     return leaf_sample_list, leaf_params_dict,leaf_result_dict
 
-def regressor(leaf_sample_list, total_leaves, leaf_params_dict, leaf_result_dict):
+def regressor(leaf_sample_list, total_leaves, leaf_params_dict, leaf_result_dict, data):
+    df = pd.read_csv("treated.csv")
     #print(leaf_params_dict)
     LR_results = []
     #for node in leaf_sample_list:
@@ -206,13 +207,39 @@ def regressor(leaf_sample_list, total_leaves, leaf_params_dict, leaf_result_dict
     #     print(f"Key: {key}, Number of lists: {len(value)}")
     #     #print(f"\t\t\t\t value: {value}")
     # return
-    counter = 1
+    counter_progress = 1
     for key,val in leaf_params_dict.items():
-        print(f"Executing n#{counter} out of {len(leaf_params_dict)}")
-        print(f"Node ID: {key}")
-        counter = counter + 1
-        # if counter > 10:
-        #     break
+        print(f"Executing n#{counter_progress} out of {len(leaf_params_dict)}")
+        print(f"Node ID: {key} \t\t Value: ", end='')
+        print(f"\n\t\t Y_value: {leaf_result_dict[key][1]}")
+        print(f"Depth of val: {len(val)}")
+        idx_counter = 0
+
+        for val_in_node in val:
+            target_row = val_in_node
+            filtered_df = df[df.iloc[:, :16].eq(target_row).all(axis=1)]
+            #print(filtered_df)
+            #print(f"val in node {val_in_node}")
+            #print(f"adsa {filtered_df[' Fanout'].iloc[index]}")
+            #target = 3.40  # Replace with your target value
+            #result = filtered_df[filtered_df['Label Delay'] == target]
+            idx_counter = 0
+            if not filtered_df.empty:
+                print(f"Index: {idx_counter}   \t\t Val in node {val_in_node}")
+                print(filtered_df)
+                for it in range(len(leaf_result_dict[key])):
+                    continue
+                    #print(leaf_result_dict[key][it])
+                idx_counter = idx_counter + 1
+                # if filtered_df['Label Delay'].iloc[1] != leaf_result_dict[key][index]:
+                #     continue
+                #print(f"FAILED: Label Delay is {filtered_df['Label Delay']} and dict value is {leaf_result_dict[key][index]}")
+            #print(f"filtered: {filtered_df['Label Delay']}")
+
+
+        counter_progress = counter_progress + 1
+        if counter_progress > 3:
+            break
         if (len(val) > 1):
             X_LR = leaf_params_dict[key]
             #print(X_LR)
@@ -289,5 +316,5 @@ if __name__ == "__main__":
     total_leaves = treeStructure(dtr, X_test, 0)
     print("total_leaves: ", total_leaves)
     leaf_sample_list, leaf_params_dict, leaf_result_dict = classification(dtr, total_leaves, X_test,y_test)
-    regressor(leaf_sample_list, total_leaves, leaf_params_dict, leaf_result_dict)
+    regressor(leaf_sample_list, total_leaves, leaf_params_dict, leaf_result_dict, "treated.csv")
 
