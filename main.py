@@ -214,32 +214,22 @@ def regressor(leaf_sample_list, total_leaves, leaf_params_dict, leaf_result_dict
         print(f"\n\t\t Y_value: {leaf_result_dict[key][1]}")
         print(f"Depth of val: {len(val)}")
         idx_counter = 0
-
-        for val_in_node in val:
-            target_row = val_in_node
-            filtered_df = df[df.iloc[:, :16].eq(target_row).all(axis=1)]
-            #print(filtered_df)
-            #print(f"val in node {val_in_node}")
-            #print(f"adsa {filtered_df[' Fanout'].iloc[index]}")
-            #target = 3.40  # Replace with your target value
-            #result = filtered_df[filtered_df['Label Delay'] == target]
-            idx_counter = 0
-            if not filtered_df.empty:
-                print(f"Index: {idx_counter}   \t\t Val in node {val_in_node}")
-                print(filtered_df)
-                for it in range(len(leaf_result_dict[key])):
-                    continue
-                    #print(leaf_result_dict[key][it])
-                idx_counter = idx_counter + 1
-                # if filtered_df['Label Delay'].iloc[1] != leaf_result_dict[key][index]:
-                #     continue
-                #print(f"FAILED: Label Delay is {filtered_df['Label Delay']} and dict value is {leaf_result_dict[key][index]}")
-            #print(f"filtered: {filtered_df['Label Delay']}")
-
-
-        counter_progress = counter_progress + 1
-        if counter_progress > 3:
-            break
+        ''' Secuencia para verificar que los diccionarios con los parámetros leaf_params_dict y resultados 
+            leaf_result_dict estén alineados con respecto a los samples originales. 
+        '''
+        # for val_in_node in val:
+        #     target_row = val_in_node
+        #     target_row.append(leaf_result_dict[key][idx_counter])
+        #     filtered_df = df[df.iloc[:, :17].eq(target_row).all(axis=1)]
+        #     idx_counter = idx_counter + 1
+        #     if  filtered_df.empty:
+        #         print(f"FAIL")
+        '''
+            Contador para detener la ejecución 
+        '''
+        # counter_progress = counter_progress + 1
+        # if counter_progress > 3:
+        #     break
         if (len(val) > 1):
             X_LR = leaf_params_dict[key]
             #print(X_LR)
@@ -254,10 +244,6 @@ def regressor(leaf_sample_list, total_leaves, leaf_params_dict, leaf_result_dict
             #print(f"columna 3{OPL_delay}")
             LR.fit(X_LR_train, y_LR_train)
             LR_pred = LR.predict(X_LR_test)
-            #print(f"shape X_LR {X_LR_test[:3]}")
-            #print(f"shape y_LR {y_LR_test}")
-            # TODO: Puede que hayan hojas que tenga un solo sample, esto puede provocar errores en el R2
-            # TODO: Calcular error entre la predicción de ML y real, y calcular error entre "Delay" y "Label Delay"
             # (prediccion de openlane) para ver si la del modelo puede ser menor a la de openlane
             resultado_LR = {"Model: ": key,
                           #"Coefficients: ": LR.coef_,
