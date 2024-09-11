@@ -199,19 +199,12 @@ def classification(dtr, total_leaves, X_test,y_test):
 
 def regressor(leaf_sample_list, total_leaves, leaf_params_dict, leaf_result_dict, data):
     df = pd.read_csv("treated.csv")
-    #print(leaf_params_dict)
+
     LR_results = []
-    #for node in leaf_sample_list:
-    # print(f"len sample {len(leaf_sample_list)}")
-    # for key,value in leaf_params_dict.items():
-    #     print(f"Key: {key}, Number of lists: {len(value)}")
-    #     #print(f"\t\t\t\t value: {value}")
-    # return
     counter_progress = 1
     for key,val in leaf_params_dict.items():
         print(f"Executing n#{counter_progress} out of {len(leaf_params_dict)}")
         print(f"Node ID: {key} \t\t Value: ", end='')
-        print(f"\n\t\t Y_value: {leaf_result_dict[key][1]}")
         print(f"Depth of val: {len(val)}")
         idx_counter = 0
         ''' Secuencia para verificar que los diccionarios con los parámetros leaf_params_dict y resultados 
@@ -232,16 +225,12 @@ def regressor(leaf_sample_list, total_leaves, leaf_params_dict, leaf_result_dict
         #     break
         if (len(val) > 1):
             X_LR = leaf_params_dict[key]
-            #print(X_LR)
             y_LR = leaf_result_dict[key]
-            #print(f"Nodo: {node}, len: {np.shape(leaf_params_dict[node])}")
-            #print(f"X_LR_test:  {X_LR}")
-            #print(f"y_LR_test:  {y_LR}")
 
             X_LR_train, X_LR_test, y_LR_train, y_LR_test = train_test_split(X_LR, y_LR, test_size=0.2, random_state=1)
             LR = linear_model.LinearRegression()
             OPL_delay = [sublist[3] for sublist in X_LR_test]
-            #print(f"columna 3{OPL_delay}")
+
             LR.fit(X_LR_train, y_LR_train)
             LR_pred = LR.predict(X_LR_test)
             # (prediccion de openlane) para ver si la del modelo puede ser menor a la de openlane
@@ -254,11 +243,13 @@ def regressor(leaf_sample_list, total_leaves, leaf_params_dict, leaf_result_dict
                           }
             LR_results.append(resultado_LR)
 
-    #print(LR_results)
-
     score_results = []
     mse_results = []
+    ml_hist = []
+    opl_hist = []
     for item in LR_results:
+        ml_hist.append(item['RMSE ML: '])
+        print(f"error {item['RMSE ML: ']}")
         # if (item['RMSE ML: '] > 10):
         #print(item['RMSE ML: '])
         if (item['RMSE ML: ']) < 10:
@@ -293,6 +284,26 @@ def regressor(leaf_sample_list, total_leaves, leaf_params_dict, leaf_result_dict
 
     # Show the plots
     plt.show()
+
+    fig2, axs = plt.subplots(1, 2, figsize=(12, 6))  # 1 row, 2 columns
+
+    # Step 3: Plot the histograms in subplots
+    # Histogram for 'RMSE ML'
+    axs[0].hist(ml_hist, bins=10, color='red', edgecolor='black')
+    axs[0].set_title('RMSE ML Histogram')
+    axs[0].set_xlabel('RMSE Value')
+    axs[0].set_ylabel('Frequency')
+
+    # Histogram for 'RMSE OpenLane'
+    axs[1].hist(mse_results, bins=100, color='blue', edgecolor='black')
+    axs[1].set_title('RMSE OpenLane Histogram')
+    axs[1].set_xlabel('RMSE Value')
+    axs[1].set_ylabel('Frequency')
+
+    # Step 4: Adjust layout and show the plot
+    plt.tight_layout()
+    plt.show()
+
 
     return
 
