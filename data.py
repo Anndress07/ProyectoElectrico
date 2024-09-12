@@ -85,7 +85,7 @@ def plotall(data):
     # Show the plot
     plt.show()
 
-#data("train.csv")
+data("train.csv")
 filtering('treated.csv')
 #plotall('treated.csv')
 #hello

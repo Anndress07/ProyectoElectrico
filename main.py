@@ -252,7 +252,7 @@ def regressor(leaf_sample_list, total_leaves, leaf_params_dict, leaf_result_dict
         print(f"error {item['RMSE ML: ']}")
         # if (item['RMSE ML: '] > 10):
         #print(item['RMSE ML: '])
-        if (item['RMSE ML: ']) < 10:
+        if (item['RMSE ML: ']) < 100:
             score_results.append(item['RMSE ML: '])
         mse_results.append(item['RMSE OpenLane: '])
         #mse_results.append(item['RMSE OpenLane: '])
@@ -289,7 +289,8 @@ def regressor(leaf_sample_list, total_leaves, leaf_params_dict, leaf_result_dict
 
     # Step 3: Plot the histograms in subplots
     # Histogram for 'RMSE ML'
-    axs[0].hist(ml_hist, bins=10, color='red', edgecolor='black')
+    axs[0].hist(score_results, bins=100, color='red', edgecolor='black')
+    #axs[0].set_xlim([0, 25])
     axs[0].set_title('RMSE ML Histogram')
     axs[0].set_xlabel('RMSE Value')
     axs[0].set_ylabel('Frequency')
