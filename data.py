@@ -71,36 +71,53 @@ def three_corners(data, corner):
     :return:    One of the following: slow.csv, typical.csv, fast.csv
     """
     df = pd.read_csv(data)
-    df_filtered = pd.DataFrame()
+    df_filtered = pd.DataFrame(columns=df.columns)
     pd.set_option('display.max_columns', None)
 
-    for row in range(len(df)):
-        current_row = df.iloc[row, :].tolist()
-        #print(current_row)
-        common_rows = df[df.iloc[:, :17].eq(current_row).all(axis=1)]
-        common_rows = df.sort_values(by="Label Delay", ascending=True)
-        print(common_rows)
-        df_filtered.append(common_rows.iloc[0,:])
-        print(df_filtered)
+    if (corner == "fast"):
+        df_filtered = df.loc[df.groupby(df.columns[:16].tolist())['Label Delay'].idxmin()]
+        df_filtered = df_filtered.reset_index(drop=True)
+        df_filtered.to_csv("fast.csv", index=False)
+    elif (corner == "slow"):
+        df_filtered = df.loc[df.groupby(df.columns[:16].tolist())['Label Delay'].idxmax()]
+        df_filtered = df_filtered.reset_index(drop=True)
+        df_filtered.to_csv("slow.csv", index=False)
+    # TODO: typical filtering not working properly.
+    elif (corner == "typical"):
+        grouped = df.groupby(df.columns[:16].tolist())
+        filtered_df = grouped.apply(get_quantile_row, quantile_value=0.5).reset_index(drop=True)
+        df_filtered.to_csv("typical.csv", index=False)
 
 
-        #df_filtered = df[df.isin(common_rows)].dropna()
-        #print(df)
+def get_quantile_row(group, quantile_value=0.5):
+    quantile_delay = group['Label Delay'].quantile(quantile_value)  # Get the specified quantile of 'Label Delay'
+    # Get the row with the closest value to the quantile
+    return group.iloc[(group['Label Delay'] - quantile_delay).abs().argsort()[:1]]
 
-        if (row > 3):
-            break
 
-    for row1 in range(len(df)):
-        common_rows1 = df[df.iloc[:, :17].eq(row).all(axis=1)]
-        if (len(common_rows1 > 1)):
-            print(common_rows1)
+def test_three(data):
+    df = pd.read_csv(data)
+    pd.set_option('display.max_columns', None)
 
+    # for row in range(len(df)):
+    #     target_row = df.iloc[row,:].tolist()
+    #     target_row = target_row[:-1]
+    #
+    #     # print(target_row)
+    #     repeated = df[df.iloc[:, :16].eq(target_row).all(axis=1)]
+    #     if (len(repeated) > 1):
+    #         print(target_row)
+    #         print(repeated)
+    target_row2 = [0.0, 0.0, 0.23, 2.89, 953120.0, 696320.0, 953120.0, 696320.0, 0.004535, 0.124522,
+                   946220.0, 690880.0, 0.0, 0.0, 2.0, 2.0]
+    repeated = df[df.iloc[:, :16].eq(target_row2).all(axis=1)]
+    print(repeated)
 
 #data("train.csv")
 #filtering('treated.csv')
 #plotall('treated.csv')
-three_corners('treated.csv', 'fast')
-
+#three_corners('treated.csv', 'slow')
+test_three('typical.csv')
 
 """
 
