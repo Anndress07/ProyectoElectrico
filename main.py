@@ -32,10 +32,25 @@ def tree(data):
     y_pred = dtr.predict(X_test)
     y_pred_train = dtr.predict(X_train)
 
-    print("MAE test", mean_absolute_error(y_test, y_pred))
-    print("MAE training", mean_absolute_error(y_train, y_pred_train))
-    print("Mean Squared Error (MSE) test:", r2_score(y_test, y_pred))
-    print("R-squared Score test: ", mean_squared_error(y_test, y_pred))
+    metrics = ['MAE Test', 'MAE Training', 'MSE Test', 'R-squared Test']
+    values = [mean_absolute_error(y_test, y_pred), mean_absolute_error(y_train, y_pred_train), r2_score(y_test, y_pred),
+              mean_squared_error(y_test, y_pred)]
+
+    plt.figure(figsize=(6, 8))
+    plt.bar(metrics, values, color=['lightcoral', 'indianred', 'brown', 'indigo'])
+
+    # Add titles and labels
+    plt.title('Tree Performance Metrics', fontsize=16)
+    plt.ylabel('Values', fontsize=12)
+    plt.xlabel('Metrics', fontsize=12)
+
+    # Display the plot
+    #plt.show() #TODO descomentar
+
+    # print("MAE test", mean_absolute_error(y_test, y_pred))
+    # print("MAE training", mean_absolute_error(y_train, y_pred_train))
+    # print("Mean Squared Error (MSE) test:", r2_score(y_test, y_pred))
+    # print("R-squared Score test: ", mean_squared_error(y_test, y_pred))
     # print("accuracy score: ", precision_score(y_test, y_pred))
 
     """
@@ -54,23 +69,128 @@ def tree(data):
     # Feature importances graph
     print(dtr.feature_importances_)
     features = pd.DataFrame(dtr.feature_importances_, index=X.columns)
-    features.head(16).plot(kind='bar')
-    plt.show()
+    ax = features.head(16).plot(kind='bar')
+    for p in ax.patches:
+        ax.annotate(f'{p.get_height():.2f}', (p.get_x() + p.get_width() / 2., p.get_height()),
+                    ha='center', va='baseline', fontsize=10, color='black', xytext=(0, 3),
+                    textcoords='offset points', rotation=90)
+
+    #plt.show() #TODO descomentar
 
     # Diagram of the tree
     # tree.plot_tree(dtr)
     # plt.show()
 
+    if plot_iteration:
+        tree_metrics.append(values)
+        importance_metrics.append(dtr.feature_importances_)
+
+
     return dtr, X_test, y_test
-
-
-def main():
-    dtr, X_test, y_test = tree('slow.csv')
+def main(data):
+    dtr, X_test, y_test = tree(data)
     total_leaves = treeStructure(dtr, X_test, 0)
     # print("total_leaves: ", total_leaves)
     leaf_sample_list, leaf_params_dict, leaf_result_dict = classification(dtr, X_test, y_test)
     lr_results = regressor(leaf_params_dict, leaf_result_dict)
     regressor_results(lr_results, leaf_params_dict, leaf_result_dict)
+
+def plotter():
+
+
+    """
+    an attempt to run all 3 corners and save the data from each run
+    """
+    run_list =  ["slow.csv", "fast.csv", "typical.csv", "treated.csv"]
+    for item in run_list:
+        main(item)
+
+    x_labels = ["Slow Corner", "Typical Corner", "Fast Corner", 'All']
+
+    metrics_array =np.array(tree_metrics)
+    # Number of metrics (assumed to be consistent across all lists)
+    num_metrics = 4
+
+    # Labels for the metrics
+    labels = ['MAE Test', 'MAE Train', 'MSE', 'R squared']
+
+
+    # Number of trees/experiments
+    num_experiments = 4
+
+    # Set up the figure and axis
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    # Define the width of the bars and the positions on the x-axis
+    bar_width = 0.0001
+    index = np.arange(num_experiments)
+
+    # Plot each metric
+    for i in range(num_metrics):
+        ax.bar(index + i * bar_width, metrics_array[:, i], bar_width, label=labels[i])
+
+    # Labeling
+    ax.set_xlabel('Corner')
+    ax.set_ylabel('Value')
+    ax.set_title('Metrics for the Decision Tree of Different Corners')
+    ax.set_xticks(index + (num_metrics - 1) * bar_width / 2)
+    ax.set_xticklabels([f'{i}' for i in x_labels])
+    ax.legend()
+
+    # Show plot
+    plt.tight_layout()
+    #plt.show()
+
+
+    #print(f'ml_plt1: {ml_plt1}')
+    #max_len = max(len(sublist) for sublist in ml_plt1)
+    #ml_plta = [sublist + [np.nan] * (max_len - len(sublist)) for sublist in ml_plt1]  # Pad with NaN
+    #ml_plt = np.array(ml_plta).astype(float)
+
+    #ml_plt = np.array(ml_plt1).astype(float)
+    print(f"ml_plt1: {ml_plt1}")
+
+    return
+    max_len = max(len(sublist) for sublist in opl_plt2)
+    opl_plta = [sublist + [np.nan] * (max_len - len(sublist)) for sublist in opl_plt2]  # Pad with NaN
+    opl_plt = np.array(opl_plta).astype(float)
+
+    fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4, figsize=(12, 6))
+
+    # Plot the first graph on the first subplot
+    # ax1.plot(score_results, color="red", label="RMSE ML 1")
+    colors = ["black", "green", "blue", "orange"]
+    for i in range(num_metrics):
+        ax1.plot(ml_plt1[:, 0], label=x_labels[0], color = colors[0])
+    ax1.set_title("Plot 1")
+    ax1.legend()
+
+    # Plot the second graph on the second subplot
+    for i in range(num_metrics):
+        ax2.scatter(index + i * bar_width, opl_plt[:, i], label=x_labels[i])
+    ax2.set_title("Plot 2")
+    ax2.legend()
+
+    for i in range(num_metrics):
+        ax3.scatter(index + i * bar_width, opl_plt[:, i], label=x_labels[i], s=100)
+    ax3.set_title("Plot 3")
+    ax3.legend()
+
+    # ax4_metrics = ["Average\nML error", "Average\nOpenLane error"]
+    # ax4_results = [sum(score_results) / len(score_results), sum(mse_results) / len(mse_results)]
+    # ax4.bar(ax4_metrics, ax4_results, color=['red', 'blue'], width=0.25)
+    # ax4.set_title("Plot 4")
+    for i in range(num_metrics):
+        ax4.scatter(index + i * bar_width, opl_plt[:, i], label=x_labels[i])
+    ax4.set_title("Plot 1")
+    ax4.legend()
+    # Adjust layout to prevent overlap
+    plt.tight_layout()
+
+    # Show the plots
+    plt.show() #TODO descomentar
+
+
 
 
 def treeStructure(dtr, X_test, enable):
@@ -266,19 +386,19 @@ def regressor_results(LR_results, leaf_params_dict, leaf_result_dict):
         ml_hist.append(item['RMSE ML: '])
         print(f"error {item['RMSE ML: ']}")
         # if (item['RMSE ML: '] > 10):
-        #print(item['RMSE ML: '])
+        # print(item['RMSE ML: '])
         if (item['RMSE ML: ']) < 100:
             score_results.append(item['RMSE ML: '])
         mse_results.append(item['RMSE OpenLane: '])
-        #mse_results.append(item['RMSE OpenLane: '])
+        # mse_results.append(item['RMSE OpenLane: '])
     print(f"The ML error is: {sum(score_results) / len(score_results)}")
     print(f"The OPL error is: {sum(mse_results) / len(mse_results)}")
-    #plt.plot(score_results, color="red", label="RMSE ML")
-    #plt.plot(mse_results, color="blue", label="RMSE OpenLane")
-    #plt.show()
-    #print(LR_results)
+    # plt.plot(score_results, color="red", label="RMSE ML")
+    # plt.plot(mse_results, color="blue", label="RMSE OpenLane")
+    # plt.show()
+    # print(LR_results)
 
-    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(12, 6))
+    fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4, figsize=(12, 6))
 
     # Plot the first graph on the first subplot
     ax1.plot(score_results, color="red", label="RMSE ML 1")
@@ -294,18 +414,24 @@ def regressor_results(LR_results, leaf_params_dict, leaf_result_dict):
     ax3.plot(mse_results, color="blue", label="RMSE OpenLane: ")
     ax3.set_title("Plot 3")
     ax3.legend()
+
+    ax4_metrics = ["Average\nML error", "Average\nOpenLane error"]
+    ax4_results = [sum(score_results) / len(score_results), sum(mse_results) / len(mse_results)]
+    ax4.bar(ax4_metrics, ax4_results, color=['red', 'blue'], width=0.25)
+    ax4.set_title("Plot 4")
+    ax4.legend()
     # Adjust layout to prevent overlap
     plt.tight_layout()
 
     # Show the plots
-    plt.show()
+    #plt.show() #TODO descomentar
 
     fig2, axs = plt.subplots(1, 2, figsize=(12, 6))  # 1 row, 2 columns
 
     # Step 3: Plot the histograms in subplots
     # Histogram for 'RMSE ML'
     axs[0].hist(score_results, bins=100, color='red', edgecolor='black')
-    #axs[0].set_xlim([0, 25])
+    # axs[0].set_xlim([0, 25])
     axs[0].set_title('RMSE ML Histogram')
     axs[0].set_xlabel('RMSE Value')
     axs[0].set_ylabel('Frequency')
@@ -318,9 +444,46 @@ def regressor_results(LR_results, leaf_params_dict, leaf_result_dict):
 
     # Step 4: Adjust layout and show the plot
     plt.tight_layout()
-    plt.show()
+    #plt.show() #TODO descomentar
+
+    if plot_iteration:
+        ml_plt1.append(score_results)
+        opl_plt2.append(mse_results)
+        plt4.append(ax4_results)
+
+
     return
 
 
 if __name__ == "__main__":
-    main()
+    #main("slow.csv")
+    tree_metrics = []
+    importance_metrics = []
+
+    ml_plt1 = []
+    opl_plt2 = []
+    plt4 = []
+    hist_plots = []
+    plot_iteration = True
+    plotter()
+
+    # ml_plt = np.array(ml_plt1).astype(float)
+    # np.save("tree_metrics.npy", tree_metrics)
+    # np.save("importance_metrics.npy", importance_metrics)
+    for i, row in enumerate(ml_plt1):
+        print(f"Row {i} length: {len(row)}")
+    import pickle
+
+    with open('ml_plt1.pkl', 'wb') as f:
+        pickle.dump(ml_plt1, f)
+
+    with open('opl_plt2.pkl', 'wb') as f:
+        pickle.dump(opl_plt2, f)
+
+    with open('plt4.pkl', 'wb') as f:
+        pickle.dump(plt4, f)
+
+    # np.savetxt("ml_plt.npy", ml_plt1, delimiter=',')
+    # np.save("opl_plt2.npy", opl_plt2)
+    # np.save("plt4.npy", plt4)
+
