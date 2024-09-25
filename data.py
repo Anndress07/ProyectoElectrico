@@ -84,25 +84,15 @@ def three_corners(data, corner):
         df_filtered.to_csv("slow.csv", index=False)
     # TODO: typical filtering not working properly.
     elif (corner == "typical"):
-        df_filtered = df.groupby(list(df.columns[:16]), group_keys=False).apply(keep_middle_value)
-        df_filtered = df_filtered.dropna(how='any')
-        df_filtered.reset_index(drop=True, inplace=True)
+        grouped = df.groupby(df.columns[:16].tolist())
+        filtered_df = grouped.apply(get_quantile_row, quantile_value=0.5).reset_index(drop=True)
         df_filtered.to_csv("typical.csv", index=False)
 
 
-def keep_middle_value(group):
-    if len(group) >= 3:  # We expect at least 3 rows
-        # Find the minimum and maximum 'Label Delay'
-        min_delay = group['Label Delay'].min()
-        max_delay = group['Label Delay'].max()
-
-        # Keep rows strictly in the middle (i.e., not the min or max)
-        middle_rows = group[(group['Label Delay'] > min_delay) & (group['Label Delay'] < max_delay)]
-
-        # Return only the middle row(s)
-        return middle_rows
-    else:
-        return None  # Return None for groups with less than 3 rows
+def get_quantile_row(group, quantile_value=0.5):
+    quantile_delay = group['Label Delay'].quantile(quantile_value)  # Get the specified quantile of 'Label Delay'
+    # Get the row with the closest value to the quantile
+    return group.iloc[(group['Label Delay'] - quantile_delay).abs().argsort()[:1]]
 
 
 def test_three(data):
@@ -126,8 +116,8 @@ def test_three(data):
 #data("train.csv")
 #filtering('treated.csv')
 #plotall('treated.csv')
-three_corners('treated.csv', 'typical')
-test_three('treated.csv')
+three_corners('treated.csv', 'slow')
+#test_three('typical.csv')
 
 """
 
