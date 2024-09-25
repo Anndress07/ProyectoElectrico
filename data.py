@@ -116,8 +116,8 @@ def test_three(data):
 #data("train.csv")
 #filtering('treated.csv')
 #plotall('treated.csv')
-#three_corners('treated.csv', 'slow')
-test_three('typical.csv')
+three_corners('treated.csv', 'slow')
+#test_three('typical.csv')
 
 """
 

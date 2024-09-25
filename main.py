@@ -55,7 +55,7 @@ def tree(data):
     print(dtr.feature_importances_)
     features = pd.DataFrame(dtr.feature_importances_, index=X.columns)
     features.head(16).plot(kind='bar')
-    plt.show()
+    # plt.show() # TODO: undo comment
 
     # Diagram of the tree
     # tree.plot_tree(dtr)
@@ -201,6 +201,14 @@ def classification(dtr, X_test, y_test):
 
         leaf_params_dict[leaf_id_value].append(X_test.iloc[leaf_node].tolist())
         leaf_result_dict[leaf_id_value].append(y_test.iloc[leaf_node])
+
+    # nodo_prueba_x = []
+    # for leaf_node in range(len(X_test)):
+    #     if leaf_sample_list[leaf_node] == 877:
+    #         nodo_prueba_x.append(X_test.iloc[leaf_node].tolist())
+    #         nodo_prueba_x.append(y_test.iloc[leaf_node].tolist())
+    # dfx = pd.DataFrame(nodo_prueba_x)
+    # dfx.to_csv("max_error.csv", index=False)
     return leaf_sample_list, leaf_params_dict, leaf_result_dict
 
 
@@ -222,9 +230,9 @@ def regressor(leaf_params_dict, leaf_result_dict):
     LR_results = []
     counter_progress = 1
     for key, val in leaf_params_dict.items():
-        print(f"Executing n#{counter_progress} out of {len(leaf_params_dict)}")
-        print(f"Node ID: {key} \t\t Value: ", end='')
-        print(f"Depth of val: {len(val)}")
+        # print(f"Executing n#{counter_progress} out of {len(leaf_params_dict)}")
+        # print(f"Node ID: {key} \t\t Value: ", end='')
+        # print(f"Depth of val: {len(val)}")
         counter_progress = counter_progress + 1
 
         '''
@@ -245,6 +253,10 @@ def regressor(leaf_params_dict, leaf_result_dict):
             LR.fit(X_LR_train, y_LR_train)
             LR_pred = LR.predict(X_LR_test)
             # (prediccion de openlane) para ver si la del modelo puede ser menor a la de openlane
+            if key == 877:
+                print(f"y_LR_test: {y_LR_test}\n"
+                      f"X_LR_test: {X_LR_test}\n"
+                      f"LR_pred: {LR_pred}")
             resultado_LR = {"Model: ": key,
                             # "Coefficients: ": LR.coef_,
                             # "Intercept: ": LR.intercept_,
@@ -264,15 +276,47 @@ def regressor_results(LR_results, leaf_params_dict, leaf_result_dict):
 
     for item in LR_results:
         ml_hist.append(item['RMSE ML: '])
-        print(f"error {item['RMSE ML: ']}")
+        #print(f"error {item['RMSE ML: ']}")
         # if (item['RMSE ML: '] > 10):
         #print(item['RMSE ML: '])
-        if (item['RMSE ML: ']) < 100:
-            score_results.append(item['RMSE ML: '])
+        #if (item['RMSE ML: ']) < 100:
+        score_results.append(item['RMSE ML: '])
         mse_results.append(item['RMSE OpenLane: '])
         #mse_results.append(item['RMSE OpenLane: '])
     print(f"The ML error is: {sum(score_results) / len(score_results)}")
     print(f"The OPL error is: {sum(mse_results) / len(mse_results)}")
+
+    max_rmse_ml = max(LR_results, key=lambda x: x["RMSE ML: "])
+    print(f"max rmse: {max_rmse_ml}")
+    # max rmse: {'Model: ': 877, 'RMSE ML: ': 455.5338674560883, 'RMSE OpenLane: ': 1.4957523190689026}
+
+    # for key, value in leaf_params_dict.items():
+    #     print(f"Key {key}:", end='')
+    #     for sublist in value[:5]:  # Slicing to get the first 5 lists
+    #         print(sublist)
+    #     print()
+    df1 = pd.read_csv("slow.csv")
+    # print(df1.columns)
+    df = pd.DataFrame()
+    # print(leaf_result_dict[877])
+    if 877 in leaf_params_dict:
+        data_to_append = []
+        cnt = 0
+        for sublist in leaf_params_dict[877]:
+            sublist.append(leaf_result_dict[877][cnt])
+            data_to_append.append(sublist)
+            cnt += 1
+            #max_error_df = max_error_df._append(sublist, ignore_index=True)
+            # print(sublist)
+
+        df = pd.concat([df, pd.DataFrame(data_to_append)], ignore_index=True)
+    #     print(df)
+    # print(LR_results)
+
+
+
+    df.to_csv("max_error.csv", index=False)
+
     #plt.plot(score_results, color="red", label="RMSE ML")
     #plt.plot(mse_results, color="blue", label="RMSE OpenLane")
     #plt.show()
@@ -298,7 +342,7 @@ def regressor_results(LR_results, leaf_params_dict, leaf_result_dict):
     plt.tight_layout()
 
     # Show the plots
-    plt.show()
+    # plt.show() # TODO: undo comment
 
     fig2, axs = plt.subplots(1, 2, figsize=(12, 6))  # 1 row, 2 columns
 
@@ -318,7 +362,7 @@ def regressor_results(LR_results, leaf_params_dict, leaf_result_dict):
 
     # Step 4: Adjust layout and show the plot
     plt.tight_layout()
-    plt.show()
+    # plt.show() # TODO: undo comment
     return
 
 
