@@ -175,38 +175,38 @@ def treeStructure(dtr, X_test, enable):
     return total_leaf_nodes
 
 
-def classification(dtr, X_test, y_test):
+def classification(dtr, X_train, y_train):
     """
     Classifies each sample depending on the leaf node of the decision tree they land in
     using the apply() method. Creates a dictionary where each node contains all its samples in a list
         leaf_params_dict = {ID1: [ [sample1],[sample2]...], ID2: [ [sample3],[sample4]...]... }
         leaf_result_dict = {ID1: [ [y1, y2]...]. ID2: [y3, y4]...}
     :param dtr: decision tree structure
-    :param X_test: parameter training set
-    :param y_test: prediction set
+    :param X_train: parameter training set
+    :param y_train: prediction set
     :return leaf_params_dict: Contains all leaf nodes with its grouped sample parameters:
     :return leaf_result_dict: Contains all leaf nodes with its grouped sample predictions
     """
-    leaf_sample_list = dtr.apply(X_test)
+    leaf_sample_list = dtr.apply(X_train)
 
     leaf_params_dict = {}
     leaf_result_dict = {}
 
-    for leaf_node in range(len(X_test)):
+    for leaf_node in range(len(X_train)):
         leaf_id_value = leaf_sample_list[leaf_node]
         if leaf_id_value not in leaf_params_dict:
             leaf_params_dict[leaf_id_value] = []
         if leaf_id_value not in leaf_result_dict:
             leaf_result_dict[leaf_id_value] = []
 
-        leaf_params_dict[leaf_id_value].append(X_test.iloc[leaf_node].tolist())
-        leaf_result_dict[leaf_id_value].append(y_test.iloc[leaf_node])
+        leaf_params_dict[leaf_id_value].append(X_train.iloc[leaf_node].tolist())
+        leaf_result_dict[leaf_id_value].append(y_train.iloc[leaf_node])
 
     # nodo_prueba_x = []
     # for leaf_node in range(len(X_test)):
     #     if leaf_sample_list[leaf_node] == 877:
     #         nodo_prueba_x.append(X_test.iloc[leaf_node].tolist())
-    #         nodo_prueba_x.append(y_test.iloc[leaf_node].tolist())
+    #         nodo_prueba_x.append(y_train.iloc[leaf_node].tolist())
     # dfx = pd.DataFrame(nodo_prueba_x)
     # dfx.to_csv("max_error.csv", index=False)
     return leaf_sample_list, leaf_params_dict, leaf_result_dict
@@ -241,10 +241,11 @@ def regressor(leaf_params_dict, leaf_result_dict):
         # counter_progress = counter_progress + 1
         # if counter_progress > 3:
         #     break
-
+        idx = 0
         if (len(val) > 1):
             X_LR = leaf_params_dict[key]
             y_LR = leaf_result_dict[key]
+            v
 
             X_LR_train, X_LR_test, y_LR_train, y_LR_test = train_test_split(X_LR, y_LR, test_size=0.2, random_state=1)
             LR = linear_model.LinearRegression()
@@ -252,6 +253,8 @@ def regressor(leaf_params_dict, leaf_result_dict):
 
             LR.fit(X_LR_train, y_LR_train)
             LR_pred = LR.predict(X_LR_test)
+
+            idx += 1
             # (prediccion de openlane) para ver si la del modelo puede ser menor a la de openlane
             if key == 877:
                 print(f"y_LR_test: {y_LR_test}\n"
@@ -273,6 +276,7 @@ def regressor_results(LR_results, leaf_params_dict, leaf_result_dict):
     score_results = []
     mse_results = []
     ml_hist = []
+
 
     for item in LR_results:
         ml_hist.append(item['RMSE ML: '])
