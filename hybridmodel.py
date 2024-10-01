@@ -83,7 +83,7 @@ class HybridModel:
 
         else:
             print("Error: fit() must be called before predict()")
-        return y_pred, self.linear_predictions
+        return self.linear_predictions
 
 
 
