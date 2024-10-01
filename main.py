@@ -54,7 +54,7 @@ def tree(data):
     # Feature importances graph
     print(dtr.feature_importances_)
     features = pd.DataFrame(dtr.feature_importances_, index=X.columns)
-    features.head(16).plot(kind='bar')
+    # features.head(16).plot(kind='bar')
     # plt.show() # TODO: undo comment
 
     # Diagram of the tree
@@ -69,9 +69,17 @@ def main():
     total_leaves = treeStructure(dtr, X_test, 0)
     # print("total_leaves: ", total_leaves)
     leaf_sample_list, leaf_params_dict, leaf_result_dict = classification(dtr, X_test, y_test)
-    lr_results = regressor(leaf_params_dict, leaf_result_dict)
-    regressor_results(lr_results, leaf_params_dict, leaf_result_dict)
+    lr_results, y_lr_pred = regressor(leaf_params_dict, leaf_result_dict)
+    plotter(y_lr_pred)
+    #regressor_results(lr_results, leaf_params_dict, leaf_result_dict)
 
+
+def plotter(data):
+    print(f"data {data}")
+    plt.plot(data,color="red", label="y lr pred")
+    print("hola plotter")
+    plt.title("curva sepa")
+    plt.show()
 
 def treeStructure(dtr, X_test, enable):
     """
@@ -229,23 +237,24 @@ def regressor(leaf_params_dict, leaf_result_dict):
     """
     LR_results = []
     counter_progress = 1
+    y_lr_pred = []
     for key, val in leaf_params_dict.items():
         # print(f"Executing n#{counter_progress} out of {len(leaf_params_dict)}")
         # print(f"Node ID: {key} \t\t Value: ", end='')
         # print(f"Depth of val: {len(val)}")
-        counter_progress = counter_progress + 1
+
 
         '''
             Contador para detener la ejecución 
         '''
-        # counter_progress = counter_progress + 1
-        # if counter_progress > 3:
-        #     break
+        #counter_progress = counter_progress + 1
+        if counter_progress > 2:
+            break
         idx = 0
         if (len(val) > 1):
             X_LR = leaf_params_dict[key]
             y_LR = leaf_result_dict[key]
-            v
+
 
             X_LR_train, X_LR_test, y_LR_train, y_LR_test = train_test_split(X_LR, y_LR, test_size=0.2, random_state=1)
             LR = linear_model.LinearRegression()
@@ -253,7 +262,8 @@ def regressor(leaf_params_dict, leaf_result_dict):
 
             LR.fit(X_LR_train, y_LR_train)
             LR_pred = LR.predict(X_LR_test)
-
+            print(f"LR_PRED {LR_pred}")
+            y_lr_pred.append(LR_pred)
             idx += 1
             # (prediccion de openlane) para ver si la del modelo puede ser menor a la de openlane
             if key == 877:
@@ -268,8 +278,8 @@ def regressor(leaf_params_dict, leaf_result_dict):
                             "RMSE OpenLane: ": root_mean_squared_error(OPL_delay, y_LR_test)
                             }
             LR_results.append(resultado_LR)
-
-    return LR_results
+        counter_progress = counter_progress + 1
+    return LR_results, y_lr_pred
 
 
 def regressor_results(LR_results, leaf_params_dict, leaf_result_dict):

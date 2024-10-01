@@ -11,12 +11,32 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, r
 
 
 class HybridModel:
+    """
+    Contains the structure for the entire hybrid model, the decision tree and each linear regression for the leaf nodes,
+    as well as the methods necessary for training ( fit() ) and prediction ( predict() )
+    The fit() method is meant to be used first with the training data as parameters (both X_train and y_train). It will
+    generate all objects needed for the training.
+    After calling fit(), predict() can be used with the X_test (or the data to predict). It will yield
+    linear_predictions, a list with the output for each sample in X_test.
+
+    """
 
     def __init__(self):
 
         return
 
     def fit(self, X_train, y_train):
+        """
+        Trains the hybrid model, first creating the decision tree object using the tree() method. With the method
+        classification() each sample is classified depending on the landing leaf node in the decision tree. Finally,
+        the linear regression is performed for each leaf node. The relevant coefficients are saved in a dicitonary and
+        used for later prediction methods.
+        :param X_train: training dataset parameters
+        :param y_train: training dataset outputs
+        :return decision_tree_object: the decision tree object generated in tree()
+        :return param_dict: dictionary with all samples classified by leaf node ID
+        :return LR_results: dictionary with all linear regression coefficients classified by leaf node ID
+        """
         self.decision_tree_object = self.tree(X_train, y_train)
         self.leaf_list, self.param_dict, self.output_dict = self.classification(self.decision_tree_object,
                                                                  X_train, y_train)
@@ -24,16 +44,30 @@ class HybridModel:
 
         return self.decision_tree_object, self.param_dict, self.output_dict, self.LR_results
 
-    def predict(self, X_test, y_test):
+    def predict(self, X_test):
+        """
+        Performs the prediction for each sample in the dataset (X_test). First, an initial prediction with X_test and
+        the decision tree is executed to see at which leaf node each sample lands. The apply() lists contain the node
+        for each sample.
+        For each sample in the apply() list, the proper model is searched for in the coefficients results dictionary.
+        When the correct model is found, we can gather its coefficients and intercept for the prediction as y = X*β + ε
+        where
+                X: the feature vector for given sample
+                β: the coefficients vector for the sample's leaf node
+                ε: the intercept for the sample's leaf node
+                y: resulting prediction for given sample
+        Each y result is attached to the linear_predictions DataFrame
+        :param X_test: training/to predict dataset parameters
+        :return linear_predictions: DataFrame that contains each prediction value of X_test
+        """
         self.linear_predictions = pd.Series(dtype='float64', name='linear predictions')
         if hasattr(self, 'decision_tree_object'):
             #print("Using the decision tree object from fit()")
-            y_pred = self.decision_tree_object.predict(X_test)
+            y_pred = self.decision_tree_object.predict(X_test) # no se si esto es necesario
 
-            # actualizar param_dict → meter X_test clasificados
+
             self.leaf_test_list  = self.decision_tree_object.apply(X_test)
-            # 1. ver en que leaf node cae cada sample x1
-            # 2. para el leaf node de x1, acceder a su regresion lineal y predecir y1
+
             for leaf_node in range(len(X_test)):
                 leaf_id_value = self.leaf_test_list[leaf_node]
                 for model in self.LR_results:
