@@ -21,7 +21,7 @@ y = df.iloc[:, 16]
 X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10, test_size=0.5)
 
 hb = HybridModel()
-decision_tree_object, param_dict, output_dict, LR_results =  hb.fit(X_train, y_train)
+hb.fit(X_train, y_train)
 #y_lr_pred = hb.predict(X_test)
 with open("hb_instance.pk1", "wb") as output_file:
     pickle.dump(hb, output_file)

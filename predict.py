@@ -26,4 +26,6 @@ def readcsv(training_data):
 
 X_train, X_test, y_train, y_test = readcsv(test_data)
 y_lr_pred = hb.predict(X_test)
-print()
+
+with open("hb_instance.pk1", "wb") as output_file:
+    pickle.dump(hb, output_file)

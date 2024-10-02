@@ -24,4 +24,4 @@ def readcsv(training_data):
     return X_train, X_test, y_train, y_test
 
 X_train, X_test, y_train, y_test = readcsv(training_data)
-decision_tree_object, param_dict, output_dict, LR_results =  hb.fit(X_train, y_train)
+hb.fit(X_train, y_train)

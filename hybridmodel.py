@@ -22,7 +22,7 @@ class HybridModel:
     """
 
     def __init__(self):
-
+        print("Running the hybrid class")
         return
 
     def fit(self, X_train, y_train):
@@ -42,7 +42,7 @@ class HybridModel:
                                                                  X_train, y_train)
         self.LR_results = self.regressor(self.param_dict, self.output_dict)
 
-        return self.decision_tree_object, self.param_dict, self.output_dict, self.LR_results
+        return #self.decision_tree_object, self.param_dict, self.output_dict, self.LR_results
 
     def predict(self, X_test):
         """
@@ -63,7 +63,7 @@ class HybridModel:
         self.linear_predictions = pd.Series(dtype='float64', name='linear predictions')
         if hasattr(self, 'decision_tree_object'):
             #print("Using the decision tree object from fit()")
-            y_pred = self.decision_tree_object.predict(X_test) # no se si esto es necesario
+            # y_pred = self.decision_tree_object.predict(X_test) # no se si esto es necesario
 
 
             self.leaf_test_list  = self.decision_tree_object.apply(X_test)
@@ -71,6 +71,7 @@ class HybridModel:
             for leaf_node in range(len(X_test)):
                 leaf_id_value = self.leaf_test_list[leaf_node]
                 for model in self.LR_results:
+                    #print(model['Model: '])
                     if model['Model: '] == leaf_id_value:
                         # prediction y = X * B + intercept
                         current_coefficients = model["Coefficients: "]
@@ -177,16 +178,16 @@ class HybridModel:
             # if counter_progress > 3:
             #     break
 
-            if (len(val) > 1):
+            if (len(val) > 0):
                 X_LR = leaf_params_dict[key]
                 y_LR = leaf_result_dict[key]
 
-                X_LR_train, X_LR_test, y_LR_train, y_LR_test = train_test_split(X_LR, y_LR, test_size=0.2,
-                                                                                random_state=1)
+                #X_LR_train, X_LR_test, y_LR_train, y_LR_test = train_test_split(X_LR, y_LR, test_size=0.2,
+                #                                                                random_state=1)
                 LR = linear_model.LinearRegression()
-                OPL_delay = [sublist[3] for sublist in X_LR_test]
+                #OPL_delay = [sublist[3] for sublist in X_LR_test]
 
-                LR.fit(X_LR_train, y_LR_train)
+                LR.fit(X_LR, y_LR)
                 # LR_pred = LR.predict(X_LR_test)
                 # (prediccion de openlane) para ver si la del modelo puede ser menor a la de openlane
 
@@ -199,7 +200,9 @@ class HybridModel:
                                 #"RMSE OpenLane: ": root_mean_squared_error(OPL_delay, y_LR_test)
                                 }
                 self.LR_results.append(resultado_LR)
-            #else:
-                #print("Skipped one element in linear regression")
+            # else:
+            #
+            #     self.LR_results.append(0)
+            #     print("Skipped one element in linear regression")
 
         return self.LR_results

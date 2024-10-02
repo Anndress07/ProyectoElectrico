@@ -10,8 +10,14 @@ from sklearn import linear_model
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, root_mean_squared_error
 from sklearn.metrics import precision_score
 
-
-def tree(data):
+def readcsv(data):
+    df = pd.read_csv(data)
+    pd.set_option('display.max_columns', None)
+    X = df.iloc[:, 0:16]
+    y = df.iloc[:, 16]
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10, test_size=0.5)
+    return X_train, X_test, y_train, y_test
+def tree(X_train, y_train):
     """
     Builds the initial decision tree used for sample classification
     :param data: dataset to train the tree
@@ -19,24 +25,20 @@ def tree(data):
     :X_test: test dataset
     y_test: test output variable
     """
-    df = pd.read_csv(data)
-    pd.set_option('display.max_columns', None)
-    X = df.iloc[:, 0:16]
-    y = df.iloc[:, 16]
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10, test_size=0.5)
+
 
     dtr = DecisionTreeRegressor(max_depth=9, max_features=15, random_state=10)
 
     dtr.fit(X_train, y_train)
 
-    y_pred = dtr.predict(X_test)
-    y_pred_train = dtr.predict(X_train)
+    # y_pred = dtr.predict(X_test)
+    # y_pred_train = dtr.predict(X_train)
 
-    print("MAE test", mean_absolute_error(y_test, y_pred))
-    print("MAE training", mean_absolute_error(y_train, y_pred_train))
-    print("Mean Squared Error (MSE) test:", r2_score(y_test, y_pred))
-    print("R-squared Score test: ", mean_squared_error(y_test, y_pred))
-    # print("accuracy score: ", precision_score(y_test, y_pred))
+    # print("MAE test", mean_absolute_error(y_test, y_pred))
+    # print("MAE training", mean_absolute_error(y_train, y_pred_train))
+    # print("Mean Squared Error (MSE) test:", r2_score(y_test, y_pred))
+    # print("R-squared Score test: ", mean_squared_error(y_test, y_pred))
+    # # print("accuracy score: ", precision_score(y_test, y_pred))
 
     """
     GridSearch optimal parameter max_features': [10, 14, 18]
@@ -61,11 +63,12 @@ def tree(data):
     # tree.plot_tree(dtr)
     # plt.show()
 
-    return dtr, X_test, y_test
+    return dtr
 
 
 def main():
-    dtr, X_test, y_test = tree('slow.csv')
+    X_train, X_test, y_train, y_test = readcsv("slow.csv")
+    dtr = tree(X_train, X_test)
     total_leaves = treeStructure(dtr, X_test, 0)
     # print("total_leaves: ", total_leaves)
     leaf_sample_list, leaf_params_dict, leaf_result_dict = classification(dtr, X_test, y_test)
