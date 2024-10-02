@@ -10,8 +10,14 @@ from sklearn import linear_model
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, root_mean_squared_error
 from sklearn.metrics import precision_score
 
-
-def tree(data):
+def readcsv(data):
+    df = pd.read_csv(data)
+    pd.set_option('display.max_columns', None)
+    X = df.iloc[:, 0:16]
+    y = df.iloc[:, 16]
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10, test_size=0.5)
+    return X_train, X_test, y_train, y_test
+def tree(X_train, y_train):
     """
     Builds the initial decision tree used for sample classification
     :param data: dataset to train the tree
@@ -19,24 +25,20 @@ def tree(data):
     :X_test: test dataset
     y_test: test output variable
     """
-    df = pd.read_csv(data)
-    pd.set_option('display.max_columns', None)
-    X = df.iloc[:, 0:16]
-    y = df.iloc[:, 16]
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10, test_size=0.5)
+
 
     dtr = DecisionTreeRegressor(max_depth=9, max_features=15, random_state=10)
 
     dtr.fit(X_train, y_train)
 
-    y_pred = dtr.predict(X_test)
-    y_pred_train = dtr.predict(X_train)
+    # y_pred = dtr.predict(X_test)
+    # y_pred_train = dtr.predict(X_train)
 
-    print("MAE test", mean_absolute_error(y_test, y_pred))
-    print("MAE training", mean_absolute_error(y_train, y_pred_train))
-    print("Mean Squared Error (MSE) test:", r2_score(y_test, y_pred))
-    print("R-squared Score test: ", mean_squared_error(y_test, y_pred))
-    # print("accuracy score: ", precision_score(y_test, y_pred))
+    # print("MAE test", mean_absolute_error(y_test, y_pred))
+    # print("MAE training", mean_absolute_error(y_train, y_pred_train))
+    # print("Mean Squared Error (MSE) test:", r2_score(y_test, y_pred))
+    # print("R-squared Score test: ", mean_squared_error(y_test, y_pred))
+    # # print("accuracy score: ", precision_score(y_test, y_pred))
 
     """
     GridSearch optimal parameter max_features': [10, 14, 18]
@@ -54,24 +56,33 @@ def tree(data):
     # Feature importances graph
     print(dtr.feature_importances_)
     features = pd.DataFrame(dtr.feature_importances_, index=X.columns)
-    features.head(16).plot(kind='bar')
+    # features.head(16).plot(kind='bar')
     # plt.show() # TODO: undo comment
 
     # Diagram of the tree
     # tree.plot_tree(dtr)
     # plt.show()
 
-    return dtr, X_test, y_test
+    return dtr
 
 
 def main():
-    dtr, X_test, y_test = tree('slow.csv')
+    X_train, X_test, y_train, y_test = readcsv("slow.csv")
+    dtr = tree(X_train, X_test)
     total_leaves = treeStructure(dtr, X_test, 0)
     # print("total_leaves: ", total_leaves)
     leaf_sample_list, leaf_params_dict, leaf_result_dict = classification(dtr, X_test, y_test)
-    lr_results = regressor(leaf_params_dict, leaf_result_dict)
-    regressor_results(lr_results, leaf_params_dict, leaf_result_dict)
+    lr_results, y_lr_pred = regressor(leaf_params_dict, leaf_result_dict)
+    plotter(y_lr_pred)
+    #regressor_results(lr_results, leaf_params_dict, leaf_result_dict)
 
+
+def plotter(data):
+    print(f"data {data}")
+    plt.plot(data,color="red", label="y lr pred")
+    print("hola plotter")
+    plt.title("curva sepa")
+    plt.show()
 
 def treeStructure(dtr, X_test, enable):
     """
@@ -175,38 +186,38 @@ def treeStructure(dtr, X_test, enable):
     return total_leaf_nodes
 
 
-def classification(dtr, X_test, y_test):
+def classification(dtr, X_train, y_train):
     """
     Classifies each sample depending on the leaf node of the decision tree they land in
     using the apply() method. Creates a dictionary where each node contains all its samples in a list
         leaf_params_dict = {ID1: [ [sample1],[sample2]...], ID2: [ [sample3],[sample4]...]... }
         leaf_result_dict = {ID1: [ [y1, y2]...]. ID2: [y3, y4]...}
     :param dtr: decision tree structure
-    :param X_test: parameter training set
-    :param y_test: prediction set
+    :param X_train: parameter training set
+    :param y_train: prediction set
     :return leaf_params_dict: Contains all leaf nodes with its grouped sample parameters:
     :return leaf_result_dict: Contains all leaf nodes with its grouped sample predictions
     """
-    leaf_sample_list = dtr.apply(X_test)
+    leaf_sample_list = dtr.apply(X_train)
 
     leaf_params_dict = {}
     leaf_result_dict = {}
 
-    for leaf_node in range(len(X_test)):
+    for leaf_node in range(len(X_train)):
         leaf_id_value = leaf_sample_list[leaf_node]
         if leaf_id_value not in leaf_params_dict:
             leaf_params_dict[leaf_id_value] = []
         if leaf_id_value not in leaf_result_dict:
             leaf_result_dict[leaf_id_value] = []
 
-        leaf_params_dict[leaf_id_value].append(X_test.iloc[leaf_node].tolist())
-        leaf_result_dict[leaf_id_value].append(y_test.iloc[leaf_node])
+        leaf_params_dict[leaf_id_value].append(X_train.iloc[leaf_node].tolist())
+        leaf_result_dict[leaf_id_value].append(y_train.iloc[leaf_node])
 
     # nodo_prueba_x = []
     # for leaf_node in range(len(X_test)):
     #     if leaf_sample_list[leaf_node] == 877:
     #         nodo_prueba_x.append(X_test.iloc[leaf_node].tolist())
-    #         nodo_prueba_x.append(y_test.iloc[leaf_node].tolist())
+    #         nodo_prueba_x.append(y_train.iloc[leaf_node].tolist())
     # dfx = pd.DataFrame(nodo_prueba_x)
     # dfx.to_csv("max_error.csv", index=False)
     return leaf_sample_list, leaf_params_dict, leaf_result_dict
@@ -229,22 +240,24 @@ def regressor(leaf_params_dict, leaf_result_dict):
     """
     LR_results = []
     counter_progress = 1
+    y_lr_pred = []
     for key, val in leaf_params_dict.items():
         # print(f"Executing n#{counter_progress} out of {len(leaf_params_dict)}")
         # print(f"Node ID: {key} \t\t Value: ", end='')
         # print(f"Depth of val: {len(val)}")
-        counter_progress = counter_progress + 1
+
 
         '''
             Contador para detener la ejecución 
         '''
-        # counter_progress = counter_progress + 1
-        # if counter_progress > 3:
-        #     break
-
+        #counter_progress = counter_progress + 1
+        if counter_progress > 2:
+            break
+        idx = 0
         if (len(val) > 1):
             X_LR = leaf_params_dict[key]
             y_LR = leaf_result_dict[key]
+
 
             X_LR_train, X_LR_test, y_LR_train, y_LR_test = train_test_split(X_LR, y_LR, test_size=0.2, random_state=1)
             LR = linear_model.LinearRegression()
@@ -252,6 +265,9 @@ def regressor(leaf_params_dict, leaf_result_dict):
 
             LR.fit(X_LR_train, y_LR_train)
             LR_pred = LR.predict(X_LR_test)
+            print(f"LR_PRED {LR_pred}")
+            y_lr_pred.append(LR_pred)
+            idx += 1
             # (prediccion de openlane) para ver si la del modelo puede ser menor a la de openlane
             if key == 877:
                 print(f"y_LR_test: {y_LR_test}\n"
@@ -265,14 +281,15 @@ def regressor(leaf_params_dict, leaf_result_dict):
                             "RMSE OpenLane: ": root_mean_squared_error(OPL_delay, y_LR_test)
                             }
             LR_results.append(resultado_LR)
-
-    return LR_results
+        counter_progress = counter_progress + 1
+    return LR_results, y_lr_pred
 
 
 def regressor_results(LR_results, leaf_params_dict, leaf_result_dict):
     score_results = []
     mse_results = []
     ml_hist = []
+
 
     for item in LR_results:
         ml_hist.append(item['RMSE ML: '])
