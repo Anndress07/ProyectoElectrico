@@ -11,6 +11,8 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, r
 from sklearn.metrics import precision_score
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
+from sklearn.linear_model import Ridge
+
 scaler = StandardScaler()
 df = pd.read_csv("max_error.csv")
 pd.set_option('display.max_columns', None)
@@ -40,12 +42,22 @@ X_LR_train, X_LR_test, y_LR_train, y_LR_test = train_test_split(X, y, test_size=
 print(f"y_lr_test {y_LR_test}")
 # X_LR_train = scaler.fit_transform(X_LR_train)
 # X_LR_test = scaler.transform(X_LR_test)
+#
+# LR = linear_model.LinearRegression()
+#
+# LR.fit(X_LR_train, y_LR_train)
+# LR_pred_train = LR.predict(X_LR_train)
+# LR_pred = LR.predict(X_LR_test)
 
-LR = linear_model.LinearRegression()
+LR = Ridge(alpha=1.0)
 
 LR.fit(X_LR_train, y_LR_train)
 LR_pred_train = LR.predict(X_LR_train)
 LR_pred = LR.predict(X_LR_test)
+
+# LR = Ridge(alpha=1.0)
+# LR.fit(X, y)
+
 print(f"score:  {LR.score(X_LR_test, y_LR_test)}")
 
 print("test--")
@@ -53,13 +65,25 @@ print(f"\tr2: {r2_score(y_LR_test, LR_pred)}")
 print(f"\tMAE: : {mean_squared_error(y_LR_test, LR_pred)}")
 print(f"\tRMSE ML: { root_mean_squared_error(y_LR_test, LR_pred)}")
 print(f"\tpred: {LR_pred}")
+
 #print(f"\tdata: {X_LR_test.describe().round(3)}")
 print("train--")
 print(f"\tr2: {r2_score(y_LR_train, LR_pred_train)}")
 print(f"\tMAE: : {mean_squared_error(y_LR_train, LR_pred_train)}")
 print(f"\tRMSE ML: { root_mean_squared_error(y_LR_train, LR_pred_train)}")
 print(f"\tpred: {LR_pred_train}")
+
+print(X_LR_train.iloc[1, 0:16])
+print(X_LR_test.iloc[0, 0:16])
+#print(f"\tcoef: {LR.coef_}")
 #print(f"\tdata: {X_LR_train.describe().round(3)}")
+# print(f"coefs:")
+# print(LR.coef_)
+# print(type(LR.coef_))
+
+for i in range(len(LR.coef_)):
+    print(f"\tParameter: {df.columns[i]}, coef: {LR.coef_[i]}")
+    #print(LR.coef_[i])
 
 # plt.scatter(X_LR_test.iloc[:, 3], y_LR_test, color="black")
 # plt.plot(
@@ -70,9 +94,9 @@ print(f"\tpred: {LR_pred_train}")
 
 # plt.show()
 # print(f"lr pred {LR_pred}")
-plt.scatter(LR_pred, y_LR_test, color="blue", label="test")
+#plt.scatter(LR_pred, y_LR_test, color="blue", label="test")
 plt.scatter(LR_pred_train, y_LR_train, color="purple", label="train" )
-plt.plot([y_LR_test.min(), y_LR_test.max()], [y_LR_test.min(), y_LR_test.max()], color="red", linewidth=2)
+#plt.plot([y_LR_test.min(), y_LR_test.max()], [y_LR_test.min(), y_LR_test.max()], color="red", linewidth=2)
 plt.plot([y_LR_train.min(), y_LR_train.max()], [y_LR_train.min(), y_LR_train.max()], color="green" , linewidth=2)
 plt.legend()
 plt.xlabel("Predicted")

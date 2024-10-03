@@ -30,7 +30,7 @@ with open('ml_plt1.pkl', 'rb') as f:
     # Add labels, titles and legends for each subplot
     for i, ax in enumerate(axs):
         #ax.set_ylabel(f'Row {i} Values')
-        ax.set_ylim(0,80)
+        ax.set_ylim(0,140)
         ax.legend()
 
     plt.tight_layout(rect=[0, 0, 1, 0.96])
@@ -54,7 +54,7 @@ with open('ml_plt1.pkl', 'rb') as f:
         # Add labels, titles and legends for each subplot
         for i, ax in enumerate(axs):
             # ax.set_ylabel(f'Row {i} Values')
-            ax.set_ylim(0, 80)
+            ax.set_ylim(0, 140)
             ax.legend()
 
         plt.tight_layout(rect=[0, 0, 1, 0.96])

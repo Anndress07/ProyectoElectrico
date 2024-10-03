@@ -43,6 +43,33 @@ print("MAE test", mean_absolute_error(y_test, y_pred))
 print("Mean Squared Error (MSE) test:", mean_squared_error(y_test, y_pred))
 print("R-squared Score test: ", r2_score(y_test, y_pred))
 
+OPL_delay = X_test[' Delay']
+
+# print(OPL_delay)
+# print(len(y_test))
+OPL_RMSE = root_mean_squared_error(OPL_delay, y_test)
+ML_RMSE = root_mean_squared_error(y_pred, y_test)
+
+print(f"OPL_RMSE: {OPL_RMSE}")
+print(f"ML_RMSE: {ML_RMSE}")
+
+print(y_test)
+print(X_test[' Delay'])
+
+opl_rmse_list = []
+ml_rmse_list = []
+for i in range(5):
+    print(f"X_test: {X_test.iloc[i][' Delay']}")
+    print(f"\ty_test: {y_test.iloc[i]}")
+    #opl_rmse_list.append(root_mean_squared_error(X_test.iloc[i][" Delay"], y_test.iloc[i]))
+    #ml_rmse_list.append(root_mean_squared_error(y_pred.iloc[i], y_test[i]))
+# plt.plot(opl_rmse_list, label='OPL;', color='blue')
+# #plt.plot(ml_rmse_list, label='ML', color='orange')
+# plt.title('OPL vs ML')
+# plt.xlabel('Samples')
+# plt.ylabel('Values')
+# plt.legend()
+# plt.show()
 # plt.plot(y_test.reset_index(drop=True), label='Actual', color='blue')
 # plt.plot(y_pred.reset_index(drop=True), label='Predicted', color='orange')
 #

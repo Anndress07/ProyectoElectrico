@@ -6,6 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn import tree
 from sklearn.tree import DecisionTreeRegressor
 from sklearn import linear_model
+from sklearn.linear_model import Ridge
 
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, root_mean_squared_error
 
@@ -185,6 +186,7 @@ class HybridModel:
                 #X_LR_train, X_LR_test, y_LR_train, y_LR_test = train_test_split(X_LR, y_LR, test_size=0.2,
                 #                                                                random_state=1)
                 LR = linear_model.LinearRegression()
+                #LR = Ridge(alpha=1.0)
                 #OPL_delay = [sublist[3] for sublist in X_LR_test]
 
                 LR.fit(X_LR, y_LR)
