@@ -27,6 +27,12 @@ pred_dataframe = hb.linear_predictions
 pred_dataframe["y_test"] = pred_dataframe['idx on X_test'].apply(lambda x: y_test[int(x)])
 pred_dataframe['error'] = abs(pred_dataframe['y_test'] - pred_dataframe['y_pred'])
 pd.set_option('display.float_format', '{:.3f}'.format)
+rows_before = len(pred_dataframe)
+
+pred_dataframe.drop(pred_dataframe[pred_dataframe['error'] > 10].index, inplace=True)
+rows_after = len(pred_dataframe)
+rows_removed = rows_before - rows_after
+print(f"Number of instances removed: {rows_removed}")
 # df['y_test'] = df['idx on X_test'].apply(lambda x: y_test[int(x)])
 print(pred_dataframe)
 

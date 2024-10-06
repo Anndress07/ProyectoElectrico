@@ -78,9 +78,10 @@ class HybridModel:
                         #print(model['Model: '])
                         current_object = model["Object: "]
 
-                        current_X = X_test.iloc[leaf_node].to_frame().T.values # w/o feature names
+                        #current_X = X_test.iloc[leaf_node].to_frame().T.values              #TODO descomentar cuando no estandarizado
+                        current_X = X_test[leaf_node]#.to_frame().T.values# w/o feature names
                         #print(f"Current_X: {current_X}")
-                        y_lr_pred = current_object.predict(current_X)
+                        y_lr_pred = current_object.predict(current_X.reshape(1, -1))
                         #print(f"y_lr_pred: {y_lr_pred}")
                         #y_lr_series = pd.Series([y_lr_pred], index=[leaf_node], name='linear predictions')
 
@@ -143,7 +144,8 @@ class HybridModel:
             if leaf_id_value not in self.leaf_result_dict:
                 self.leaf_result_dict[leaf_id_value] = []
 
-            self.leaf_params_dict[leaf_id_value].append(X_train.iloc[leaf_node].tolist())
+            #self.leaf_params_dict[leaf_id_value].append(X_train.iloc[leaf_node].tolist()) #TODO usar cuando no se este estandarizando
+            self.leaf_params_dict[leaf_id_value].append(X_train[leaf_node])
             self.leaf_result_dict[leaf_id_value].append(y_train.iloc[leaf_node])
 
         # nodo_prueba_x = []
