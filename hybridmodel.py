@@ -61,28 +61,34 @@ class HybridModel:
         :param X_test: training/to predict dataset parameters
         :return linear_predictions: DataFrame that contains each prediction value of X_test
         """
-        self.linear_predictions = pd.Series(dtype='float64', name='linear predictions')
+        self.linear_predictions = pd.DataFrame(columns=['node_id','idx on X_test','y_pred'])
         if hasattr(self, 'decision_tree_object'):
             #print("Using the decision tree object from fit()")
             # y_pred = self.decision_tree_object.predict(X_test) # no se si esto es necesario
 
 
             self.leaf_test_list  = self.decision_tree_object.apply(X_test)
-
+            #print(f"leaf_test_list {self.leaf_test_list}")
             for leaf_node in range(len(X_test)):
                 leaf_id_value = self.leaf_test_list[leaf_node]
+                #print(f"leaf_id_value: {leaf_id_value}")
                 for model in self.LR_results:
-                    #print(model['Model: '])
+
                     if model['Model: '] == leaf_id_value:
-                        # prediction y = X * B + intercept
-                        current_coefficients = model["Coefficients: "]
-                        current_intercept = model['Intercept: ']
-                        current_X = X_test.iloc[leaf_node]
+                        #print(model['Model: '])
+                        current_object = model["Object: "]
 
-                        y_lr_pred = np.dot(current_X, current_coefficients) + current_intercept
-                        y_lr_series = pd.Series([y_lr_pred], index=[leaf_node], name='linear predictions')
-                        self.linear_predictions = pd.concat([self.linear_predictions, y_lr_series])
+                        current_X = X_test.iloc[leaf_node].to_frame().T.values # w/o feature names
+                        #print(f"Current_X: {current_X}")
+                        y_lr_pred = current_object.predict(current_X)
+                        #print(f"y_lr_pred: {y_lr_pred}")
+                        #y_lr_series = pd.Series([y_lr_pred], index=[leaf_node], name='linear predictions')
 
+                        self.linear_predictions = self.linear_predictions._append({'node_id': model['Model: '],
+                                                                                  'idx on X_test': leaf_node,
+                                                                                   "y_pred": y_lr_pred[0]},
+                                                                                  ignore_index= True)
+                        #print("===================================\n\n")
         else:
             print("Error: fit() must be called before predict()")
         return self.linear_predictions
@@ -142,7 +148,7 @@ class HybridModel:
 
         # nodo_prueba_x = []
         # for leaf_node in range(len(X_test)):
-        #     if leaf_sample_list[leaf_node] == 877:
+        #     if leaf_sample_list[leaf_node] == 598:
         #         nodo_prueba_x.append(X_test.iloc[leaf_node].tolist())
         #         nodo_prueba_x.append(y_train.iloc[leaf_node].tolist())
         # dfx = pd.DataFrame(nodo_prueba_x)
@@ -186,7 +192,8 @@ class HybridModel:
                 #X_LR_train, X_LR_test, y_LR_train, y_LR_test = train_test_split(X_LR, y_LR, test_size=0.2,
                 #                                                                random_state=1)
                 LR = linear_model.LinearRegression()
-                #LR = Ridge(alpha=1.0)
+                #LR = linear_model.Lasso(alpha=0.5)
+                # LR = Ridge(alpha=1.0)
                 #OPL_delay = [sublist[3] for sublist in X_LR_test]
 
                 LR.fit(X_LR, y_LR)
@@ -195,8 +202,8 @@ class HybridModel:
 
 
                 resultado_LR = {"Model: ": key,
-                                "Coefficients: ": LR.coef_,
-                                "Intercept: ": LR.intercept_,
+                                "Object: ": LR
+                                #"Intercept: ": LR.intercept_,
                                 # "Score: ": r2_score(y_LR_test, LR_pred),
                                 #"RMSE ML: ": root_mean_squared_error(y_LR_test, LR_pred),
                                 #"RMSE OpenLane: ": root_mean_squared_error(OPL_delay, y_LR_test)

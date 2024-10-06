@@ -23,7 +23,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10, test_
 hb = HybridModel()
 hb.fit(X_train, y_train)
 #y_lr_pred = hb.predict(X_test)
-with open("hb_instance.pk1", "wb") as output_file:
+with open("hb_instance2.pk1", "wb") as output_file:
     pickle.dump(hb, output_file)
 
 
