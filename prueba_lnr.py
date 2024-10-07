@@ -24,8 +24,8 @@ def readcsv(training_data):
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10, test_size=0.5)
     #print(f"y_Test {y_test}")
     #print(f"x_Test: {X_test}")
-    y_test = y_test.head(10000)
-    X_test = X_test.head(10000)
+    #y_test = y_test.head(10000)
+    #X_test = X_test.head(10000)
     pd.set_option('display.max_columns', None)
     # print(f"y_Test {y_test}")
     # print(f"x_Test: {X_test}")
@@ -53,18 +53,18 @@ X2 = pd.DataFrame(X2, columns=df.columns)
 X = df.iloc[:, 0:16]
 #print(X)
 y = df.iloc[:, 16]
-X_LR_train = X1
+X_LR_train = X
 y_LR_train = y
-X_train_scaled = scaler.fit_transform(X_train)
+#X_train_scaled = scaler.fit_transform(X_train)
 # 0.00000000e+00 0.00000000e+00 1.20000000e-01 1.17000000e+00
 #  3.31660000e+05 3.59040000e+05 3.31660000e+05 3.59040000e+05
 #  4.56400000e-03 1.34592000e-01 3.19700000e+05 4.78720000e+05
 #  1.59348674e+03 1.06010233e+05 2.00000000e+00 2.00000000e+00
-X_LR_test = X_test.iloc[9429].values
+X_LR_test = X_test.iloc[23960].values
 
 
 
-y_LR_test = y_test.iloc[9429]
+y_LR_test = y_test.iloc[23960]
 
 #X_LR_train, X_LR_test, y_LR_train, y_LR_test = train_test_split(X, y, test_size=0.2, random_state=1)
 print(f"X_lr_test {X_LR_test}")
@@ -78,10 +78,10 @@ print(f"y_lr_test {y_LR_test}")
 # LR_pred_train = LR.predict(X_LR_train)
 # LR_pred = LR.predict(X_LR_test)
 
-# LR = linear_model.LinearRegression()
+#LR = linear_model.LinearRegression()
 LR = Ridge(alpha=1.0)
-X_LR_train = scaler.fit_transform(X_LR_train)
-X_LR_test = scaler.fit_transform(X_LR_test.reshape(1, -1))
+#X_LR_train = scaler.fit_transform(X_LR_train)
+#X_LR_test = scaler.fit_transform(X_LR_test.reshape(1, -1))
 LR.fit(X_LR_train, y_LR_train)
 LR_pred_train = LR.predict(X_LR_train)
 LR_pred = LR.predict(X_LR_test.reshape(1, -1))

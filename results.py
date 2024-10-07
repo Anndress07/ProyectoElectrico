@@ -41,7 +41,7 @@ print(large_error)
 
 #print(pred_dataframe.loc[24])
 
-filtered_df = pred_dataframe[pred_dataframe['node_id'] == 598.000]
+filtered_df = pred_dataframe[pred_dataframe['node_id'] == 660.000]
 
 # Display the filtered DataFrame
 print("\n",filtered_df)
@@ -72,65 +72,5 @@ ML_RMSE = root_mean_squared_error(y_pred, y_test)
 print(f"\tOPL_RMSE: {OPL_RMSE}")
 print(f"\tML_RMSE: {ML_RMSE}")
 
-print(f"sample test: {X_test.iloc[9429].values}")
+print(f"sample test: {X_test.iloc[23960].values}")
 
-# print(y_test)
-# print(X_test[' Delay'])
-
-opl_rmse_list = []
-ml_rmse_list = []
-# for i in range(5):
-#     print(f"X_test: {X_test.iloc[i][' Delay']}")
-#     print(f"\ty_test: {y_test[i]}")
-    #opl_rmse_list.append(root_mean_squared_error(X_test.iloc[i][" Delay"], y_test.iloc[i]))
-    #ml_rmse_list.append(root_mean_squared_error(y_pred.iloc[i], y_test[i]))
-# plt.plot(opl_rmse_list, label='OPL;', color='blue')
-# #plt.plot(ml_rmse_list, label='ML', color='orange')
-# plt.title('OPL vs ML')
-# plt.xlabel('Samples')
-# plt.ylabel('Values')
-# plt.legend()
-# plt.show()
-# plt.plot(y_test.reset_index(drop=True), label='Actual', color='blue')
-# plt.plot(y_pred.reset_index(drop=True), label='Predicted', color='orange')
-#
-# plt.title('Actual vs Predicted')
-# plt.xlabel('Samples')
-# plt.ylabel('Values')
-# plt.legend()
-# plt.show()
-#
-# plt.scatter(y_test, y_pred, alpha=0.5)
-# plt.plot([min(y_test), max(y_test)], [min(y_test), max(y_test)], color='red', linestyle='--')  # Diagonal line
-# plt.title('Scatter Plot of Actual vs Predicted')
-# plt.xlabel('Actual')
-# plt.ylabel('Predicted')
-# plt.show()
-#
-# residuals = y_test - y_pred
-# plt.scatter(y_test, residuals, alpha=0.5)
-# plt.axhline(y=0, color='red', linestyle='--')
-# plt.title('Residual Plot (Actual vs Residuals)')
-# plt.xlabel('Actual')
-# plt.ylabel('Residuals')
-# plt.show()
-#
-# plt.hist(residuals, bins=50, alpha=0.75)
-# plt.title('Histogram of Residuals')
-# plt.xlabel('Residual')
-# plt.ylabel('Frequency')
-# plt.show()
-#
-# import scipy.stats as stats
-# import matplotlib.pyplot as plt
-#
-# stats.probplot(residuals, dist="norm", plot=plt)
-# plt.title('QQ Plot of Residuals')
-# plt.show()
-
-# plt.scatter(feature, residuals, alpha=0.5)
-# plt.axhline(y=0, color='red', linestyle='--')
-# plt.title('Residuals by Feature')
-# plt.xlabel('Feature')
-# plt.ylabel('Residuals')
-# plt.show()
