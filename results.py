@@ -28,15 +28,19 @@ pred_dataframe["y_test"] = pred_dataframe['idx on X_test'].apply(lambda x: y_tes
 pred_dataframe['error'] = abs(pred_dataframe['y_test'] - pred_dataframe['y_pred'])
 pd.set_option('display.float_format', '{:.3f}'.format)
 # df['y_test'] = df['idx on X_test'].apply(lambda x: y_test[int(x)])
+
+
 print(pred_dataframe)
+
 
 y_pred = pred_dataframe['y_pred']
 #print(len(hb.linear_predictions))
 #print(len(y_test))
-
-large_error = pred_dataframe.nlargest(10, 'error')
-small_error = pred_dataframe.nsmallest(10, 'error')
-print(large_error)
+#pd.set_option('display.max_rows', None)
+large_error = pred_dataframe.nlargest(4000, 'error')
+small_error = pred_dataframe.nsmallest(50000, 'error')
+print(f"largest errors:\n {large_error}")
+print(f"smallest errors:\n {small_error}")
 #print(small_error)
 
 #print(pred_dataframe.loc[24])
@@ -46,20 +50,38 @@ filtered_df = pred_dataframe[pred_dataframe['node_id'] == 660.000]
 # Display the filtered DataFrame
 print("\n",filtered_df)
 
+#  sample_to_test = [23960, 25870, 56097, 42310, 15001]
+rows_to_display = pred_dataframe.iloc[[23960, 25870, 56097, 42310, 15001]]
+print(rows_to_display)
+
+
 
 # Plotting
-import matplotlib.pyplot as plt
+
+
+indices_to_remove = pred_dataframe[pred_dataframe['error'] > 10]['idx on X_test'].tolist()
+for idx in indices_to_remove:
+    if idx in y_pred:
+        y_pred.drop(idx)
+
+
+rows_before = len(pred_dataframe)
+pred_dataframe.drop(pred_dataframe[pred_dataframe['error'] > 10].index, inplace=True)
+rows_after = len(pred_dataframe)
+rows_removed = rows_before - rows_after
+print(f"Number of instances removed: {rows_removed}")
+
 
 plt.plot(pred_dataframe['y_pred'], label='Predictions')
-plt.plot(y_test, label='Actual')
+plt.plot(pred_dataframe['y_test'], label='Actual')
 #plt.ylim(-100, 100)
 plt.legend()
 plt.show()
 
 print("--linear reg")
-print("\tMAE test", mean_absolute_error(y_test, y_pred))
-print("\tMean Squared Error (MSE) test:", mean_squared_error(y_test, y_pred))
-print("\tR-squared Score test: ", r2_score(y_test, y_pred))
+print("\tMAE test", mean_absolute_error(pred_dataframe['y_test'], pred_dataframe['y_pred']))
+print("\tMean Squared Error (MSE) test:", mean_squared_error(pred_dataframe['y_test'], pred_dataframe['y_pred']))
+print("\tR-squared Score test: ", r2_score(pred_dataframe['y_test'], pred_dataframe['y_pred']))
 
 OPL_delay = X_test[' Delay']
 
@@ -67,10 +89,10 @@ OPL_delay = X_test[' Delay']
 # print(OPL_delay)
 # print(len(y_test))
 OPL_RMSE = root_mean_squared_error(OPL_delay, y_test)
-ML_RMSE = root_mean_squared_error(y_pred, y_test)
+ML_RMSE = root_mean_squared_error(pred_dataframe['y_test'], pred_dataframe['y_pred'])
 
 print(f"\tOPL_RMSE: {OPL_RMSE}")
 print(f"\tML_RMSE: {ML_RMSE}")
 
-print(f"sample test: {X_test.iloc[23960].values}")
+# print(f"sample test: {X_test.iloc[23960].values}")
 

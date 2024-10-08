@@ -20,6 +20,7 @@ training_data = "slow.csv"
 #     hb = pickle.load(input_file)
 def readcsv(training_data):
     df = pd.read_csv(training_data)
+    print(df.columns)
     X = df.iloc[:, 0:16]
     y = df.iloc[:, 16]
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10, test_size=0.5)

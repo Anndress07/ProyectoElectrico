@@ -81,6 +81,20 @@ class HybridModel:
                         current_X = X_test.iloc[leaf_node].to_frame().T.values # w/o feature names
                         #print(f"Current_X: {current_X}")
                         y_lr_pred = current_object.predict(current_X)
+
+
+                        #### debug
+                        col_names = [' Fanout', ' Cap', ' Slew', ' Delay', 'X_drive', 'Y_drive', 'X_sink',
+                                     'Y_sink', 'C_drive', 'C_sink', 'X_context', 'Y_context', 'σ(X)_context',
+                                     'σ(Y)_context', 'Drive_cell_size', 'Sink_cell_size', 'Label Delay']
+                        sample_to_test = [23960, 25870, 56097, 42310, 15001]
+                        if leaf_node in sample_to_test:
+                            print(f"Description of sample {leaf_node} of node {leaf_id_value}. ")
+                            print(f"\t y_pred = {y_lr_pred[0]}")
+                            for i in range(len(current_object.coef_)):
+                                print(
+                                    f"\tParameter {i:<2}: {col_names[i]:<15}, coef: {current_object.coef_[i]:<12.4f}, sample: {current_X[0][i]:<11.2f}"
+                                    f"result: {current_object.coef_[i] * current_X[0][i]:<12.2f}")
                         #print(f"y_lr_pred: {y_lr_pred}")
                         #y_lr_series = pd.Series([y_lr_pred], index=[leaf_node], name='linear predictions')
 

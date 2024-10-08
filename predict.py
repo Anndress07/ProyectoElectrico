@@ -26,8 +26,8 @@ def readcsv(training_data):
     #print(f"x_Test: {X_test}")
     # y_test = y_test.head(10000)
     # X_test = X_test.head(10000)
-    y_test = y_test.iloc[[23960, 25870, 56097]]
-    X_test = X_test.iloc[[23960, 25870, 56097]]
+    #y_test = y_test.iloc[[23960, 25870, 56097]]
+    #X_test = X_test.iloc[[23960, 25870, 56097]]
     pd.set_option('display.max_columns', None)
     # print(f"y_Test {y_test}")
     # print(f"x_Test: {X_test}")
@@ -41,19 +41,20 @@ X_train, X_test, y_train, y_test = readcsv(test_data)
 # X_test = scaler.transform(X_test)
 y_lr_pred = hb.predict(X_test)
 
-# TESTING
+
 with open("hb_instance2.pk1", "wb") as output_file:
     pickle.dump(hb, output_file)
-# test de data
-for model in hb.leaf_params_dict:
-    if model == 660:
-        nodo_prueba_x = hb.leaf_params_dict[model]
-        print(f"model 660: {hb.leaf_params_dict[660]}")
-for model in hb.leaf_result_dict:
-    if model == 660:
-        nodo_prueba_y = hb.leaf_result_dict[model]
-        print(f"model 660: {hb.leaf_result_dict[660]}")
-nodo_prueba_x = pd.DataFrame(nodo_prueba_x)
-nodo_prueba_x['16'] = nodo_prueba_y
-#print(nodo_prueba_x)
-nodo_prueba_x.to_csv('prueba_lnr.csv', index=False)
+# TESTING
+# # test de data
+# for model in hb.leaf_params_dict:
+#     if model == 660:
+#         nodo_prueba_x = hb.leaf_params_dict[model]
+#         print(f"model 660: {hb.leaf_params_dict[660]}")
+# for model in hb.leaf_result_dict:
+#     if model == 660:
+#         nodo_prueba_y = hb.leaf_result_dict[model]
+#         print(f"model 660: {hb.leaf_result_dict[660]}")
+# nodo_prueba_x = pd.DataFrame(nodo_prueba_x)
+# nodo_prueba_x['16'] = nodo_prueba_y
+# #print(nodo_prueba_x)
+# nodo_prueba_x.to_csv('prueba_lnr.csv', index=False)

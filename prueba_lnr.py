@@ -60,15 +60,21 @@ y_LR_train = y
 #  3.31660000e+05 3.59040000e+05 3.31660000e+05 3.59040000e+05
 #  4.56400000e-03 1.34592000e-01 3.19700000e+05 4.78720000e+05
 #  1.59348674e+03 1.06010233e+05 2.00000000e+00 2.00000000e+00
-X_LR_test = X_test.iloc[23960].values
+
+sample_idx = 23960
+X_LR_test = X_test.iloc[sample_idx].values
+X_lr_list = X_LR_test.tolist()
+# X_LR_test = [ [0.00000000e+00, 0.00000000e+00, 2.70000000e-01, 2.10000000e+00, 1.28340000e+05, 4.65120000e+05,
+#                1.28340000e+05, 4.65120000e+05, 2.46700000e-03, 5.94187000e-01, 3.03534286e+05, 5.92182857e+05, # los que mas cambian son los dos últimos
+#                1.30698412e+00, 9.25561591e+00, 4.00000000e+00, 4.00000000e+00]]
 
 
 
-y_LR_test = y_test.iloc[23960]
+y_LR_test = y_test.iloc[sample_idx]
 
 #X_LR_train, X_LR_test, y_LR_train, y_LR_test = train_test_split(X, y, test_size=0.2, random_state=1)
 print(f"X_lr_test {X_LR_test}")
-print(f"y_lr_test {y_LR_test}")
+
 # X_LR_train = scaler.fit_transform(X_LR_train)
 # X_LR_test = scaler.transform(X_LR_test)
 #
@@ -78,18 +84,19 @@ print(f"y_lr_test {y_LR_test}")
 # LR_pred_train = LR.predict(X_LR_train)
 # LR_pred = LR.predict(X_LR_test)
 
-#LR = linear_model.LinearRegression()
-LR = Ridge(alpha=1.0)
+LR = linear_model.LinearRegression()
+#LR = Ridge(alpha=1.0)
 #X_LR_train = scaler.fit_transform(X_LR_train)
 #X_LR_test = scaler.fit_transform(X_LR_test.reshape(1, -1))
 LR.fit(X_LR_train, y_LR_train)
 LR_pred_train = LR.predict(X_LR_train)
 LR_pred = LR.predict(X_LR_test.reshape(1, -1))
+# LR_pred = LR.predict(X_LR_test)
 
 # LR = Ridge(alpha=1.0)
 # LR.fit(X, y)
 
-print(f"y_pred: {LR_pred}")
+
 
 # print(f"score:  {LR.score(X_LR_test, y_LR_test)}")
 #
@@ -113,11 +120,20 @@ print(f"y_pred: {LR_pred}")
 # print(f"coefs:")
 # print(LR.coef_)
 # print(type(LR.coef_))
+col_names = [' Fanout', ' Cap', ' Slew', ' Delay', 'X_drive', 'Y_drive', 'X_sink',
+       'Y_sink', 'C_drive', 'C_sink', 'X_context', 'Y_context', 'σ(X)_context',
+       'σ(Y)_context', 'Drive_cell_size', 'Sink_cell_size', 'Label Delay']
+# for i in range(len(LR.coef_)):
+#     print(f"\tParameter {df.columns[i]}: {col_names[i]},\t\t coef: {LR.coef_[i]:.4f},\t\t sample: {X_LR_test[0][i]}")
+
 
 for i in range(len(LR.coef_)):
-    print(f"\tParameter: {df.columns[i]}, coef: {LR.coef_[i]}")
+    print(f"\tParameter {i:<2}: {col_names[i]:<15}, coef: {LR.coef_[i]:<12.4f}, sample: {X_lr_list[i]:<11.2f}"
+          f"result: {LR.coef_[i]*X_lr_list[i]:<12.2f}")
+print(f"\tintercept: {LR.intercept_}")
     #print(LR.coef_[i])
-
+print(f"y_pred: {LR_pred}")
+print(f"y_lr_test {y_LR_test}")
 # plt.scatter(X_LR_test.iloc[:, 3], y_LR_test, color="black")
 # plt.plot(
 #     X_LR_test.iloc[:, 3], LR_pred, color="blue", linewidth=3)
