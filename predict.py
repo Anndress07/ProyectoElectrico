@@ -42,16 +42,16 @@ y_lr_pred = hb.predict(X_test)
 # TESTING
 with open("hb_instance2.pk1", "wb") as output_file:
     pickle.dump(hb, output_file)
-# test de data
-for model in hb.leaf_params_dict:
-    if model == 423:
-        nodo_prueba_x = hb.leaf_params_dict[model]
-        print(f"model 192: {hb.leaf_params_dict[192]}")
-for model in hb.leaf_result_dict:
-    if model == 423:
-        nodo_prueba_y = hb.leaf_result_dict[model]
-        print(f"model 192: {hb.leaf_result_dict[192]}")
-nodo_prueba_x = pd.DataFrame(nodo_prueba_x)
-nodo_prueba_x['16'] = nodo_prueba_y
-print(nodo_prueba_x)
-nodo_prueba_x.to_csv('prueba_lnr.csv', index=False)
+# # test de data
+# for model in hb.leaf_params_dict:
+#     if model == 423:
+#         nodo_prueba_x = hb.leaf_params_dict[model]
+#         print(f"model 192: {hb.leaf_params_dict[192]}")
+# for model in hb.leaf_result_dict:
+#     if model == 423:
+#         nodo_prueba_y = hb.leaf_result_dict[model]
+#         print(f"model 192: {hb.leaf_result_dict[192]}")
+# nodo_prueba_x = pd.DataFrame(nodo_prueba_x)
+# nodo_prueba_x['16'] = nodo_prueba_y
+# print(nodo_prueba_x)
+# nodo_prueba_x.to_csv('prueba_lnr.csv', index=False)

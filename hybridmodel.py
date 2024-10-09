@@ -193,9 +193,9 @@ class HybridModel:
 
                 #X_LR_train, X_LR_test, y_LR_train, y_LR_test = train_test_split(X_LR, y_LR, test_size=0.2,
                 #                                                                random_state=1)
-                LR = linear_model.LinearRegression()
+                # LR = linear_model.LinearRegression()
                 #LR = linear_model.Lasso(alpha=0.5)
-                # LR = Ridge(alpha=1.0)
+                LR = Ridge(alpha=1.0)
                 #OPL_delay = [sublist[3] for sublist in X_LR_test]
 
                 LR.fit(X_LR, y_LR)
