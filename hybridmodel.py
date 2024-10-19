@@ -26,7 +26,7 @@ class HybridModel:
         print("Running the hybrid class")
         return
 
-    def fit(self, X_train, y_train):
+    def fit(self, X_train, y_train, custom_params = None):
         """
         Trains the hybrid model, first creating the decision tree object using the tree() method. With the method
         classification() each sample is classified depending on the landing leaf node in the decision tree. Finally,
@@ -38,7 +38,7 @@ class HybridModel:
         :return param_dict: dictionary with all samples classified by leaf node ID
         :return LR_results: dictionary with all linear regression coefficients classified by leaf node ID
         """
-        self.decision_tree_object = self.tree(X_train, y_train)
+        self.decision_tree_object = self.tree(X_train, y_train, custom_params = None)
         self.leaf_list, self.param_dict, self.output_dict = self.classification(self.decision_tree_object,
                                                                  X_train, y_train)
         self.LR_results = self.regressor(self.param_dict, self.output_dict)
@@ -61,7 +61,7 @@ class HybridModel:
         :param X_test: training/to predict dataset parameters
         :return linear_predictions: DataFrame that contains each prediction value of X_test
         """
-        self.linear_predictions = pd.DataFrame(columns=['node_id','idx on X_test','y_pred'])
+        self.linear_predictions = pd.DataFrame(columns=['node_id','idx on X_test','y_pred','opl_pred'])
         if hasattr(self, 'decision_tree_object'):
             #print("Using the decision tree object from fit()")
             # y_pred = self.decision_tree_object.predict(X_test) # no se si esto es necesario
@@ -79,28 +79,30 @@ class HybridModel:
                         current_object = model["Object: "]
 
                         current_X = X_test.iloc[leaf_node].to_frame().T.values # w/o feature names
-                        #print(f"Current_X: {current_X}")
+                        # print(f"Current_X: {current_X}")
                         y_lr_pred = current_object.predict(current_X)
 
 
                         #### debug
-                        col_names = [' Fanout', ' Cap', ' Slew', ' Delay', 'X_drive', 'Y_drive', 'X_sink',
-                                     'Y_sink', 'C_drive', 'C_sink', 'X_context', 'Y_context', 'σ(X)_context',
-                                     'σ(Y)_context', 'Drive_cell_size', 'Sink_cell_size', 'Label Delay']
-                        sample_to_test = [23960, 25870, 56097, 42310, 15001]
-                        if leaf_node in sample_to_test:
-                            print(f"Description of sample {leaf_node} of node {leaf_id_value}. ")
-                            print(f"\t y_pred = {y_lr_pred[0]}")
-                            for i in range(len(current_object.coef_)):
-                                print(
-                                    f"\tParameter {i:<2}: {col_names[i]:<15}, coef: {current_object.coef_[i]:<12.4f}, sample: {current_X[0][i]:<11.2f}"
-                                    f"result: {current_object.coef_[i] * current_X[0][i]:<12.2f}")
+                        # col_names = [' Fanout', ' Cap', ' Slew', ' Delay', 'X_drive', 'Y_drive', 'X_sink',
+                        #              'Y_sink', 'C_drive', 'C_sink', 'X_context', 'Y_context', 'σ(X)_context',
+                        #              'σ(Y)_context', 'Drive_cell_size', 'Sink_cell_size', 'Label Delay']
+                        # sample_to_test = [23960, 25870, 56097, 42310, 15001]
+                        # if leaf_node in sample_to_test:
+                            # print(f"Description of sample {leaf_node} of node {leaf_id_value}. ")
+                            # print(f"\t y_pred = {y_lr_pred[0]}")
+                            # for i in range(len(current_object.coef_)):
+                                # print(
+                                #     f"\tParameter {i:<2}: {col_names[i]:<15}, coef: {current_object.coef_[i]:<12.4f}, sample: {current_X[0][i]:<11.2f}"
+                                #     f"result: {current_object.coef_[i] * current_X[0][i]:<12.2f}")
                         #print(f"y_lr_pred: {y_lr_pred}")
                         #y_lr_series = pd.Series([y_lr_pred], index=[leaf_node], name='linear predictions')
 
                         self.linear_predictions = self.linear_predictions._append({'node_id': model['Model: '],
                                                                                   'idx on X_test': leaf_node,
-                                                                                   "y_pred": y_lr_pred[0]},
+                                                                                   "y_pred": y_lr_pred[0]
+                                                                                   ,"opl_pred": current_X[0][3]
+                                                                                   },
                                                                                   ignore_index= True)
                         #print("===================================\n\n")
         else:
@@ -109,7 +111,7 @@ class HybridModel:
 
 
 
-    def tree(self, X_train, y_train):
+    def tree(self, X_train, y_train, custom_params = None):
         """
         Builds the initial decision tree used for sample classification
         :param training_data: dataset to train the tree
@@ -124,7 +126,10 @@ class HybridModel:
         #
         # X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10, test_size=0.5)
 
-        self.dtr = DecisionTreeRegressor(max_depth=9, max_features=15, random_state=10)
+        if custom_params is None:
+            self.dtr = DecisionTreeRegressor(max_depth=9, max_features=15, random_state=10)
+        else:
+            self.dtr = DecisionTreeRegressor(max_depth=custom_params[0], max_features=custom_params[1])
 
         self.dtr.fit(X_train, y_train)
 

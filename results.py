@@ -1,7 +1,7 @@
 import pickle
 
 #import predict as predict
-from predict import readcsv
+from predict import readcsv_p
 
 import pandas as pd
 import numpy as np
@@ -15,7 +15,9 @@ from sklearn import linear_model
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, root_mean_squared_error
 from sklearn.metrics import precision_score
 
-X_train, X_test, y_train, y_test = readcsv("slow.csv")
+X_train, X_test, y_train, y_test = readcsv_p("slow.csv", 0)
+
+
 
 with open("hb_instance2.pk1", "rb") as input_file:
     hb = pickle.load(input_file)
@@ -30,7 +32,7 @@ pd.set_option('display.float_format', '{:.3f}'.format)
 # df['y_test'] = df['idx on X_test'].apply(lambda x: y_test[int(x)])
 
 
-print(pred_dataframe)
+# print(pred_dataframe)
 
 
 y_pred = pred_dataframe['y_pred']
@@ -52,7 +54,7 @@ print("\n",filtered_df)
 
 #  sample_to_test = [23960, 25870, 56097, 42310, 15001]
 rows_to_display = pred_dataframe.iloc[[23960, 25870, 56097, 42310, 15001]]
-print(rows_to_display)
+# print(rows_to_display)
 
 
 
@@ -93,6 +95,17 @@ ML_RMSE = root_mean_squared_error(pred_dataframe['y_test'], pred_dataframe['y_pr
 
 print(f"\tOPL_RMSE: {OPL_RMSE}")
 print(f"\tML_RMSE: {ML_RMSE}")
+
+if __name__ == "__main__":
+    #X_train, X_test, y_train, y_test = readcsv_p(test_data, 0)
+
+
+    #y_lr_pred = hb.predict(X_test)
+
+    with open("hb_instance2.pk1", "wb") as output_file:
+        pickle.dump(hb, output_file)
+    print("Predict executed directly")
+
 
 # print(f"sample test: {X_test.iloc[23960].values}")
 
