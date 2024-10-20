@@ -26,7 +26,7 @@ class HybridModel:
         print("Running the hybrid class")
         return
 
-    def fit(self, X_train, y_train, custom_params = None):
+    def fit(self, X_train, y_train, LR_type, custom_params = None):
         """
         Trains the hybrid model, first creating the decision tree object using the tree() method. With the method
         classification() each sample is classified depending on the landing leaf node in the decision tree. Finally,
@@ -41,7 +41,7 @@ class HybridModel:
         self.decision_tree_object = self.tree(X_train, y_train, custom_params = None)
         self.leaf_list, self.param_dict, self.output_dict = self.classification(self.decision_tree_object,
                                                                  X_train, y_train)
-        self.LR_results = self.regressor(self.param_dict, self.output_dict)
+        self.LR_results = self.regressor(self.param_dict, self.output_dict, LR_type )
 
         return #self.decision_tree_object, self.param_dict, self.output_dict, self.LR_results
 
@@ -174,7 +174,7 @@ class HybridModel:
         # dfx.to_csv("max_error.csv", index=False)
         return self.leaf_sample_list, self.leaf_params_dict, self.leaf_result_dict
 
-    def regressor(self, leaf_params_dict, leaf_result_dict):
+    def regressor(self, leaf_params_dict, leaf_result_dict, linear_type = 0):
         """
         Implements the linear regression for each leaf node generated in the decision tree,
         that is, every entry on the dictionary leaf_params_dict and leaf_result_dict
@@ -210,9 +210,15 @@ class HybridModel:
 
                 #X_LR_train, X_LR_test, y_LR_train, y_LR_test = train_test_split(X_LR, y_LR, test_size=0.2,
                 #                                                                random_state=1)
-                LR = linear_model.LinearRegression()
+                # print(f"-------------- linear type: {linear_type}")
+                if linear_type == 0:
+                    LR = linear_model.LinearRegression()
+                    # print("Traditional linear regressor was used")
+                elif linear_type == 1:
+                    LR = Ridge(alpha=1.0)
+                    # print("Ridge linear regressor was used")
                 #LR = linear_model.Lasso(alpha=0.5)
-                # LR = Ridge(alpha=1.0)
+
                 #OPL_delay = [sublist[3] for sublist in X_LR_test]
 
                 LR.fit(X_LR, y_LR)
