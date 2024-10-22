@@ -12,16 +12,17 @@ def data(data):
     """
     df = pd.read_csv(data)
     pd.set_option('display.max_columns', None)
-    df10 = df
-    df10 = df10.drop(df.columns[0:4], axis=1) # removes Unnamed, Path #, Descr
-    df10 = df10.drop(' Network', axis=1) # removes Network
-    df10 = df10.drop('Drive_cell_type', axis=1)  # removes Drive_cell_type
-    df10 = df10.drop('Sink_cell_type', axis=1)  # removes Sink_cell_type
-    df10 = df10.drop(df10.columns[16:159], axis=1)  # removes all logic gate type label
-    df10 = df10.dropna() # Drops all rows with NaN values
+    col_names = [' Fanout', ' Cap', ' Slew', ' Delay', 'X_drive', 'Y_drive', 'X_sink',
+                 'Y_sink', 'C_drive', 'C_sink', 'X_context', 'Y_context', 'σ(X)_context',
+                 'σ(Y)_context', 'Drive_cell_size', 'Sink_cell_size', 'Label Delay']
+    df = df[col_names]
+    df = df.dropna()
+    df.to_csv('treated_designs.csv', index=False)
+    # print(df)
 
-    df10.to_csv('treated.csv', index=False)
-    print(df10.isna().sum())
+
+
+    # print(df.isna().sum())
 
 def filtering(data):
     """
@@ -81,7 +82,8 @@ def three_corners(data, corner):
     elif (corner == "slow"):
         df_filtered = df.loc[df.groupby(df.columns[:16].tolist())['Label Delay'].idxmax()]
         df_filtered = df_filtered.reset_index(drop=True)
-        df_filtered.to_csv("slow.csv", index=False)
+        print(df_filtered)
+        df_filtered.to_csv("designs_slow.csv", index=False)
     # TODO: typical filtering not working properly.
     elif (corner == "typical"):
         grouped = df.groupby(df.columns[:16].tolist())
@@ -113,12 +115,71 @@ def test_three(data):
     repeated = df[df.iloc[:, :16].eq(target_row2).all(axis=1)]
     print(repeated)
 
-#data("train.csv")
-#filtering('treated.csv')
-#plotall('treated.csv')
-three_corners('treated.csv', 'slow')
-#test_three('typical.csv')
+def remove_context_features(data_path):
+    """
+    Removes the features X_context and Y_context in both the training and testing data.
+    Alters the file path name with the modified csv.
+    :param train_data: file name of the training data
+    :param test_data: file name of the testing data
+    :return: New path names including the modified csv
+    """
+    df_data = pd.read_csv(data_path)
+    df_data = df_data.drop(columns=['X_context', 'Y_context'], errors='ignore')
+    df_data.to_csv("modded_data.csv", index=False)
+    NEW_DATA = "modded_data.csv"
+
+    return NEW_DATA
+
+def remove_std_dvt_context(data_path):
+    """
+    Removes the features σ(X)_context and σ(Y)_context in both the training and testing data.
+    Alters the file path name with the modified csv.
+    :param train_data: file name of the training data
+    :param test_data: file name of the testing data
+    :return: New path names including the modified csv
+    """
+
+    df_data = pd.read_csv(data_path)
+    df_data = df_data.drop(columns=['σ(X)_context', 'σ(Y)_context'], errors='ignore')
+    df_data.to_csv("modded_data.csv", index=False)
+    NEW_DATA = "modded_data.csv"
+
+    return NEW_DATA
+
+
+def calc_distance_parameter(data_path):
+    """
+    Calculates the Euclidean distance given X_drive, X_sink, Y_drive, Y_sink. Removes
+    the aforementioned, adds a new parameter called "Distance"
+    :param train_data: file name of the training data
+    :param test_data: file name of the testing data
+    :return: New path names including the modified csv
+    """
+
+    df_data = pd.read_csv(data_path)
+    df_data['Distance'] = np.sqrt((df_data['X_drive'] - df_data['X_sink']) ** 2 + (df_data['Y_drive'] - df_data['Y_sink']) ** 2)
+    df_data = df_data.drop(columns=['X_drive', 'Y_drive', 'X_sink', 'Y_sink'])
+    cols = df_data.columns.tolist()
+    cols.remove('Distance')
+    delay_idx = cols.index(' Delay')
+    new_cols_order = cols[:delay_idx + 1] + ['Distance'] + cols[delay_idx + 1:]
+    df_data = df_data[new_cols_order]
+
+    df_data.to_csv("modded_data.csv", index=False)
+    NEW_DATA = "modded_data.csv"
+
+    return NEW_DATA
+
+
+
 
 """
 
 """
+
+if __name__ == "__main__":
+    data("test_designs.csv")
+    # filtering('treated.csv')
+    # plotall('treated.csv')
+    three_corners('treated_designs.csv', 'slow')
+    # test_three('typical.csv')

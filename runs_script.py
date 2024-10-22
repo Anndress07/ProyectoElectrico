@@ -11,9 +11,9 @@ from results_run import build_df_imported
 
 
 
-NUMBER_OF_RUNS = 5
+NUMBER_OF_RUNS = 200
 TRAINING_DATA = "slow.csv"
-TESTING_DATA = "slow.csv"
+TESTING_DATA = "labels_slow.csv"
 C_TRAINING_DATA = TRAINING_DATA
 C_TESTING_DATA = TESTING_DATA
 modded_train = pd.read_csv(TRAINING_DATA)
@@ -54,9 +54,9 @@ def remove_std_dvt_context(train_data, test_data):
     :param test_data: file name of the testing data
     :return: New path names including the modified csv
     """
-    if train_data != "modded_train.csv":
-        TRAINING_DATA = C_TRAINING_DATA
-        TESTING_DATA = C_TESTING_DATA
+    # if train_data != "modded_train.csv":
+    #     TRAINING_DATA = C_TRAINING_DATA
+    #     TESTING_DATA = C_TESTING_DATA
     df_train = pd.read_csv(train_data)
     df_train = df_train.drop(columns=['σ(X)_context', 'σ(Y)_context'], errors='ignore')
     df_train.to_csv("modded_train.csv", index=False)
@@ -78,18 +78,29 @@ def calc_distance_parameter(train_data, test_data):
     :return: New path names including the modified csv
     """
 
-    if train_data != "modded_train.csv":
-        TRAINING_DATA = C_TRAINING_DATA
-        TESTING_DATA = C_TESTING_DATA
+    # if train_data != "modded_train.csv":
+    #     TRAINING_DATA = C_TRAINING_DATA
+    #     TESTING_DATA = C_TESTING_DATA
     df_train = pd.read_csv(train_data)
     df_train['Distance'] = np.sqrt((df_train['X_drive'] - df_train['X_sink']) ** 2 + (df_train['Y_drive'] - df_train['Y_sink']) ** 2)
     df_train = df_train.drop(columns=['X_drive', 'Y_drive', 'X_sink', 'Y_sink'])
+    cols = df_train.columns.tolist()
+    cols.remove('Distance')
+    delay_idx = cols.index(' Delay')
+    new_cols_order = cols[:delay_idx + 1] + ['Distance'] + cols[delay_idx + 1:]
+    df_train = df_train[new_cols_order]
+
     df_train.to_csv("modded_train.csv", index=False)
     TRAINING_DATA = "modded_train.csv"
 
     df_test = pd.read_csv(test_data)
     df_test['Distance'] = np.sqrt((df_test['X_drive'] - df_test['X_sink']) ** 2 + (df_test['Y_drive'] - df_test['Y_sink']) ** 2)
     df_test = df_test.drop(columns=['X_drive', 'Y_drive', 'X_sink', 'Y_sink'])
+    cols = df_test.columns.tolist()
+    cols.remove('Distance')
+    delay_idx = cols.index(' Delay')
+    new_cols_order = cols[:delay_idx + 1] + ['Distance'] + cols[delay_idx + 1:]
+    df_test = df_test[new_cols_order]
     df_test.to_csv("modded_test.csv", index=False)
     TESTING_DATA = "modded_test.csv"
 
@@ -119,9 +130,9 @@ while current_run < NUMBER_OF_RUNS:
     tree_max_features = random.randint(5, 15) # best = 15
 
     # Parameter selection
-    context_features =  False # random.choice([True, False])
-    std_dvt_context =  False#random.choice([True, False])
-    distance_parameter = True #random.choice([True, False])
+    context_features =  random.choice([True, False])
+    std_dvt_context = random.choice([True, False])
+    distance_parameter = random.choice([True, False])
 
     if not context_features:
         TRAINING_DATA, TESTING_DATA = remove_context_features(TRAINING_DATA, TESTING_DATA)
@@ -155,7 +166,7 @@ while current_run < NUMBER_OF_RUNS:
     # todo: maybe a dictionary would work better here
     (large_error, small_error, ML_MAE, ML_MSE, OPL_MAE, OPL_MSE, MAE_DIFF, MSE_DIFF, R2_SCORE, ML_pcorr, ML_p_value, ML_MAE_f, ML_MSE_f,
      OPL_MAE_f, OPL_MSE_f, MAE_DIFF_f, MSE_DIFF_f, R2_SCORE_f, ML_pcorr_f,
-     ML_p_value_f) = build_df_imported(hb.linear_predictions, X_test, y_test )
+     ML_p_value_f, rows_removed) = build_df_imported(hb.linear_predictions, X_test, y_test )
 
 
     """ DataFrame filling logic"""
@@ -188,6 +199,7 @@ while current_run < NUMBER_OF_RUNS:
         'R2': R2_SCORE,
         'Pearson coeff': ML_pcorr,
         'Pearson P': ML_p_value,
+        '# of rows removed': rows_removed,
         'MAE linear reg f': ML_MAE_f,
         'MSE linear reg f': ML_MSE_f,
         'MAE OPL f': OPL_MAE_f,
@@ -207,6 +219,7 @@ while current_run < NUMBER_OF_RUNS:
 
 df.to_csv("output_file.csv", index=False)
 df.to_excel('output_file.xlsx', index=False)
+
 
 
 

@@ -53,7 +53,7 @@ filtered_df = pred_dataframe[pred_dataframe['node_id'] == 660.000]
 print("\n",filtered_df)
 
 #  sample_to_test = [23960, 25870, 56097, 42310, 15001]
-rows_to_display = pred_dataframe.iloc[[23960, 25870, 56097, 42310, 15001]]
+# rows_to_display = pred_dataframe.iloc[[23960, 25870, 56097, 42310, 15001]]
 # print(rows_to_display)
 
 

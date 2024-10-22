@@ -191,6 +191,7 @@ class HybridModel:
         """
         self.LR_results = []
         counter_progress = 1
+        print(f"Linear type is {linear_type}")
         for key, val in leaf_params_dict.items():
             # print(f"Executing n#{counter_progress} out of {len(leaf_params_dict)}")
             # print(f"Node ID: {key} \t\t Value: ", end='')

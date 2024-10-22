@@ -1,6 +1,7 @@
 import pickle
 
 import pandas as pd
+from data import remove_context_features, remove_std_dvt_context, calc_distance_parameter
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import StrMethodFormatter
@@ -11,8 +12,8 @@ from sklearn import linear_model
 
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, root_mean_squared_error
 from sklearn.metrics import precision_score
-
-test_data = "slow.csv"
+FULL_FILES = True
+test_data = "designs_slow.csv"
 with open("hb_instance2.pk1", "rb") as input_file:
     hb = pickle.load(input_file)
 
@@ -28,6 +29,11 @@ def readcsv_p(training_data, data_mode):
         X = df.iloc[:, 0:df.shape[1] - 1]
         y = df.iloc[:, df.shape[1] - 1]
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10, test_size=0.5)
+
+    if FULL_FILES:
+        X_test = X
+        y_test = y
+        X_train, y_train = None, None
     pd.set_option('display.max_columns', None)
     print(f"desde el predict.py")
     print(f"\ttraining data: {training_data}")
@@ -47,7 +53,7 @@ def readcsv_p(training_data, data_mode):
         with open('scaler.pkl', 'rb') as f:
             scaler = pickle.load(f)
         X_test_scaled = scaler.transform(X_test)
-        X_test_scaled = scaler.fit_transform(X_train)
+        # X_test_scaled = scaler.fit_transform(X_train)
         X_test_scaled_df = pd.DataFrame(X_test_scaled, columns=X_test.columns)
         X_test = X_test_scaled_df
 
@@ -59,7 +65,9 @@ def readcsv_p(training_data, data_mode):
 
 
 if __name__ == "__main__":
-    X_train, X_test, y_train, y_test = readcsv_p(test_data, 0)
+    new_data = remove_std_dvt_context(test_data)
+    new_data = calc_distance_parameter(new_data)
+    X_train, X_test, y_train, y_test = readcsv_p(new_data, 0)
 
 
     y_lr_pred = hb.predict(X_test)

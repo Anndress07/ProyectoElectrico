@@ -1,4 +1,5 @@
 from hybridmodel import HybridModel
+from data import remove_context_features, remove_std_dvt_context, calc_distance_parameter
 import pickle
 
 import pandas as pd
@@ -14,7 +15,7 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, r
 from sklearn.metrics import precision_score
 
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
-
+FULL_FILES = True # if the entire file is used to train
 training_data = "slow.csv"
 # with open("hb_instance2.pk1", "rb") as input_file:
 #     hb = pickle.load(input_file)
@@ -30,6 +31,10 @@ def readcsv(training_data, data_mode):
         X = df.iloc[:, 0:df.shape[1] - 1]
         y = df.iloc[:, df.shape[1] - 1]
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10, test_size=0.5)
+    if FULL_FILES:
+        X_train = X
+        y_train = y
+        X_test, y_test = None, None
 
     if (data_mode == 1): #estandarizada
         scaler = StandardScaler()
@@ -51,10 +56,12 @@ def readcsv(training_data, data_mode):
 # X_train, X_test, y_train, y_test = readcsv(training_data)
 
 if __name__ == "__main__":
-    X_train, X_test, y_train, y_test = readcsv(training_data, 0)
+    new_data = remove_std_dvt_context(training_data)
+    new_data = calc_distance_parameter(new_data)
+    X_train, X_test, y_train, y_test = readcsv(new_data, 0)
 
     hb = HybridModel()
-    hb.fit(X_train, y_train)
+    hb.fit(X_train, y_train, 1)
 
     with open("hb_instance2.pk1", "wb") as output_file:
         pickle.dump(hb, output_file)
@@ -71,12 +78,12 @@ if __name__ == "__main__":
 
 
 
-if __name__ == "__main__":
-    X_train, X_test, y_train, y_test = readcsv(training_data, 0)
-
-    hb = HybridModel()
-    hb.fit(X_train, y_train)
-
-    with open("hb_instance2.pk1", "wb") as output_file:
-        pickle.dump(hb, output_file)
-    print("Train executed directly")
+# if __name__ == "__main__":
+#     X_train, X_test, y_train, y_test = readcsv(training_data, 0)
+#
+#     hb = HybridModel()
+#     hb.fit(X_train, y_train)
+#
+#     with open("hb_instance2.pk1", "wb") as output_file:
+#         pickle.dump(hb, output_file)
+#     print("Train executed directly")

@@ -37,7 +37,7 @@ def build_df_imported(pred_results, X_test, actual_results =  None):
 
         (ML_MAE, ML_MSE, OPL_MAE, OPL_MSE, MAE_DIFF, MSE_DIFF, R2_SCORE, ML_pcorr,
          ML_p_value) = data_visualization(pred_dataframe, X_test, y_test, False)
-        low_error = data_filtered_low_error(pred_dataframe)
+        low_error,rows_removed = data_filtered_low_error(pred_dataframe)
         (ML_MAE_f, ML_MSE_f, OPL_MAE_f, OPL_MSE_f, MAE_DIFF_f, MSE_DIFF_f, R2_SCORE_f, ML_pcorr_f,
          ML_p_value_f) = data_visualization(low_error, X_test, y_test, False)
 
@@ -61,7 +61,7 @@ def build_df_imported(pred_results, X_test, actual_results =  None):
         # results_df = pd.concat([df2, result_unfiltered], axis=1)
         # results_df = pd.concat([results_df, result_filtered], axis=1)
 
-        return large_error, small_error, ML_MAE, ML_MSE, OPL_MAE, OPL_MSE, MAE_DIFF, MSE_DIFF, R2_SCORE, ML_pcorr, ML_p_value, ML_MAE_f, ML_MSE_f, OPL_MAE_f, OPL_MSE_f, MAE_DIFF_f, MSE_DIFF_f, R2_SCORE_f, ML_pcorr_f, ML_p_value_f
+        return large_error, small_error, ML_MAE, ML_MSE, OPL_MAE, OPL_MSE, MAE_DIFF, MSE_DIFF, R2_SCORE, ML_pcorr, ML_p_value, ML_MAE_f, ML_MSE_f, OPL_MAE_f, OPL_MSE_f, MAE_DIFF_f, MSE_DIFF_f, R2_SCORE_f, ML_pcorr_f, ML_p_value_f, rows_removed
 def build_df_native():
     X_train, X_test, y_train, y_test = readcsv_p("slow.csv", 0)
 
@@ -104,7 +104,7 @@ def data_filtered_low_error(pred_dataframe):
     rows_removed = rows_before - rows_after
     print(f"Number of instances removed: {rows_removed}")
 
-    return new_df
+    return new_df, rows_removed
 
 
 def data_visualization(pred_dataframe, X_test, y_test, plots_enable):
