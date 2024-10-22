@@ -65,9 +65,10 @@ def readcsv_p(training_data, data_mode):
 
 
 if __name__ == "__main__":
-    new_data = remove_std_dvt_context(test_data)
-    new_data = calc_distance_parameter(new_data)
-    X_train, X_test, y_train, y_test = readcsv_p(new_data, 0)
+    new_data = remove_context_features(test_data)
+    # new_data = remove_std_dvt_context(test_data)
+    # new_data = calc_distance_parameter(new_data)
+    X_train, X_test, y_train, y_test = readcsv_p(new_data, 2)
 
 
     y_lr_pred = hb.predict(X_test)

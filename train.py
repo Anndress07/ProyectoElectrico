@@ -56,12 +56,13 @@ def readcsv(training_data, data_mode):
 # X_train, X_test, y_train, y_test = readcsv(training_data)
 
 if __name__ == "__main__":
-    new_data = remove_std_dvt_context(training_data)
-    new_data = calc_distance_parameter(new_data)
-    X_train, X_test, y_train, y_test = readcsv(new_data, 0)
+    new_data = remove_context_features(training_data)
+    # new_data = remove_std_dvt_context(training_data)
+    # new_data = calc_distance_parameter(new_data)
+    X_train, X_test, y_train, y_test = readcsv(new_data, 2)
 
     hb = HybridModel()
-    hb.fit(X_train, y_train, 1)
+    hb.fit(X_train, y_train, 1, [5, 15])
 
     with open("hb_instance2.pk1", "wb") as output_file:
         pickle.dump(hb, output_file)

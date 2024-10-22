@@ -13,7 +13,7 @@ from results_run import build_df_imported
 
 NUMBER_OF_RUNS = 200
 TRAINING_DATA = "slow.csv"
-TESTING_DATA = "labels_slow.csv"
+TESTING_DATA = "designs_slow.csv"
 C_TRAINING_DATA = TRAINING_DATA
 C_TESTING_DATA = TESTING_DATA
 modded_train = pd.read_csv(TRAINING_DATA)
