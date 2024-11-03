@@ -15,7 +15,7 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, r
 from sklearn.metrics import precision_score
 
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
-FULL_FILES = True # if the entire file is used to train
+FULL_FILES = False   # if the entire file is used to train
 training_data = "slow.csv"
 # with open("hb_instance2.pk1", "rb") as input_file:
 #     hb = pickle.load(input_file)
@@ -25,12 +25,14 @@ def readcsv(training_data, data_mode):
         y = training_data.iloc[:, training_data.shape[1]-1]
     else:
         df = pd.read_csv(training_data)
+        # df =df.drop(columns=['Design'])
         # print(df.columns)
         # X = df.iloc[:, 0:16]
         # y = df.iloc[:, 16]
+
         X = df.iloc[:, 0:df.shape[1] - 1]
         y = df.iloc[:, df.shape[1] - 1]
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10, test_size=0.5)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10, test_size=0.2)
     if FULL_FILES:
         X_train = X
         y_train = y
@@ -56,17 +58,21 @@ def readcsv(training_data, data_mode):
 # X_train, X_test, y_train, y_test = readcsv(training_data)
 
 if __name__ == "__main__":
+    """
+    RUN ID = 13, STANDARDIZED, NO STDVT CONTEXT, DISTANCE, MAX DEPTH 9, RIDGE, MAX FEATURES 15
+ 
+    """
     new_data = remove_context_features(training_data)
-    # new_data = remove_std_dvt_context(training_data)
-    # new_data = calc_distance_parameter(new_data)
-    X_train, X_test, y_train, y_test = readcsv(new_data, 2)
+    new_data = remove_std_dvt_context(new_data)
+    new_data = calc_distance_parameter(new_data)
+    X_train, X_test, y_train, y_test = readcsv(new_data, 0)
 
     hb = HybridModel()
-    hb.fit(X_train, y_train, 1, [5, 15])
+    hb.fit(X_train, y_train, 1, [13, 13])
 
     with open("hb_instance2.pk1", "wb") as output_file:
         pickle.dump(hb, output_file)
-    print("Predict executed directly")
+
 
 # scaler = StandardScaler()
 # X_train = scaler.fit_transform(X_train)

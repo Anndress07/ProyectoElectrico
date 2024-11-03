@@ -11,9 +11,9 @@ from results_run import build_df_imported
 
 
 
-NUMBER_OF_RUNS = 200
+NUMBER_OF_RUNS = 600
 TRAINING_DATA = "slow.csv"
-TESTING_DATA = "designs_slow.csv"
+TESTING_DATA = "slow.csv"
 C_TRAINING_DATA = TRAINING_DATA
 C_TESTING_DATA = TESTING_DATA
 modded_train = pd.read_csv(TRAINING_DATA)
@@ -117,22 +117,30 @@ while current_run < NUMBER_OF_RUNS:
     TRAINING_DATA = C_TRAINING_DATA
     TESTING_DATA = C_TESTING_DATA
 
-    data_type = random.choice([0, 1, 2])  # Selects a type of adjustment to be made on the data
+    data_type = 1
+    # data_type = random.choice([0, 1, 2])  # Selects a type of adjustment to be made on the data
     # data_type = 0 → Nothing
     # data_type = 1 → Standardization
     # data_type = 2 → Normalization
 
-    LR_type = random.choice([0,1])  # Selects the type of linear regressor to be used to fit the model
+    LR_type = 1
+    # LR_type = random.choice([0,1])  # Selects the type of linear regressor to be used to fit the model
     # LR_type = 0 → LinearRegressor()
     # LR_type = 1 → Ridge(alpha = 1.0)
 
     tree_max_depth = random.randint(5,15) # best = 9
+    tree_max_depth = 9
     tree_max_features = random.randint(5, 15) # best = 15
+    tree_max_features = 14
 
     # Parameter selection
     context_features =  random.choice([True, False])
     std_dvt_context = random.choice([True, False])
     distance_parameter = random.choice([True, False])
+
+    context_features = True
+    std_dvt_context = False
+    distance_parameter = True
 
     if not context_features:
         TRAINING_DATA, TESTING_DATA = remove_context_features(TRAINING_DATA, TESTING_DATA)
@@ -166,7 +174,7 @@ while current_run < NUMBER_OF_RUNS:
     # todo: maybe a dictionary would work better here
     (large_error, small_error, ML_MAE, ML_MSE, OPL_MAE, OPL_MSE, MAE_DIFF, MSE_DIFF, R2_SCORE, ML_pcorr, ML_p_value, ML_MAE_f, ML_MSE_f,
      OPL_MAE_f, OPL_MSE_f, MAE_DIFF_f, MSE_DIFF_f, R2_SCORE_f, ML_pcorr_f,
-     ML_p_value_f, rows_removed) = build_df_imported(hb.linear_predictions, X_test, y_test )
+     ML_p_value_f, rows_removed, OPL_RMSE, ML_RMSE, OPL_RMSE_f, ML_RMSE_f) = build_df_imported(hb.linear_predictions, X_test, y_test )
 
 
     """ DataFrame filling logic"""
@@ -187,25 +195,32 @@ while current_run < NUMBER_OF_RUNS:
         'Context Features': "Yes" if context_features else "No",
         'STD DVT context': "Yes" if std_dvt_context else "No",
         'Distance with X, Y': "Yes" if distance_parameter else "No",
-        'Tree Max Depth': tree_max_features,
+        'Tree Max Depth': tree_max_depth,
+        'Max Tree Features':tree_max_features,
         'Biggest 4000th error': large_error,
         'Smallest 50kth error': small_error,
         'MAE linear reg': ML_MAE,
         'MSE linear reg': ML_MSE,
+        'RMSE linear reg': ML_RMSE,
         'MAE OPL': OPL_MAE,
         'MSE OPL': OPL_MSE,
+        'RMSE OPL': OPL_RMSE,
         'MAE diff': MAE_DIFF,
         'MSE diff': MSE_DIFF,
+        'RMSE diff': OPL_RMSE - ML_RMSE,
         'R2': R2_SCORE,
         'Pearson coeff': ML_pcorr,
         'Pearson P': ML_p_value,
         '# of rows removed': rows_removed,
         'MAE linear reg f': ML_MAE_f,
         'MSE linear reg f': ML_MSE_f,
+        'RMSE linear reg f': ML_RMSE_f,
         'MAE OPL f': OPL_MAE_f,
         'MSE OPL f': OPL_MSE_f,
+        'RMSE OPL f': OPL_RMSE_f,
         'MAE diff f': MAE_DIFF_f,
         'MSE diff f': MSE_DIFF_f,
+        'RMSE diff f': OPL_RMSE_f - ML_RMSE_f,
         'R2 f': R2_SCORE_f,
         'Pearson coeff f': ML_pcorr_f,
         'Pearson P f': ML_p_value_f

@@ -12,12 +12,12 @@ def data(data):
     """
     df = pd.read_csv(data)
     pd.set_option('display.max_columns', None)
-    col_names = [' Fanout', ' Cap', ' Slew', ' Delay', 'X_drive', 'Y_drive', 'X_sink',
+    col_names = ['Design', ' Fanout', ' Cap', ' Slew', ' Delay', 'X_drive', 'Y_drive', 'X_sink',
                  'Y_sink', 'C_drive', 'C_sink', 'X_context', 'Y_context', 'σ(X)_context',
                  'σ(Y)_context', 'Drive_cell_size', 'Sink_cell_size', 'Label Delay']
     df = df[col_names]
     df = df.dropna()
-    df.to_csv('treated_designs.csv', index=False)
+    df.to_csv('treated_labels.csv', index=False)
     # print(df)
 
 
@@ -83,7 +83,7 @@ def three_corners(data, corner):
         df_filtered = df.loc[df.groupby(df.columns[:16].tolist())['Label Delay'].idxmax()]
         df_filtered = df_filtered.reset_index(drop=True)
         print(df_filtered)
-        df_filtered.to_csv("designs_slow.csv", index=False)
+        df_filtered.to_csv("labels_slow.csv", index=False)
     # TODO: typical filtering not working properly.
     elif (corner == "typical"):
         grouped = df.groupby(df.columns[:16].tolist())
@@ -178,8 +178,8 @@ def calc_distance_parameter(data_path):
 """
 
 if __name__ == "__main__":
-    data("test_designs.csv")
+    data("test_labels.csv")
     # filtering('treated.csv')
     # plotall('treated.csv')
-    three_corners('treated_designs.csv', 'slow')
+    three_corners('treated_labels.csv', 'slow')
     # test_three('typical.csv')

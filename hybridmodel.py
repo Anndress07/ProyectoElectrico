@@ -7,6 +7,7 @@ from sklearn import tree
 from sklearn.tree import DecisionTreeRegressor
 from sklearn import linear_model
 from sklearn.linear_model import Ridge
+from sklearn.linear_model import LassoCV, Lasso
 
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, root_mean_squared_error
 
@@ -217,8 +218,9 @@ class HybridModel:
                     # print("Traditional linear regressor was used")
                 elif linear_type == 1:
                     LR = Ridge(alpha=1.0)
+                    # LR = LassoCV( max_iter=10000, tol=0.001, cv=2)
                     # print("Ridge linear regressor was used")
-                #LR = linear_model.Lasso(alpha=0.5)
+                    # LR = linear_model.Lasso(alpha=10000, max_iter=100000, tol=0.1)
 
                 #OPL_delay = [sublist[3] for sublist in X_LR_test]
 

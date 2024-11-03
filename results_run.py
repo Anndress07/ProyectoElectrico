@@ -12,12 +12,13 @@ from sklearn import tree
 from sklearn.tree import DecisionTreeRegressor
 from sklearn import linear_model
 from scipy.stats import pearsonr
-
+from data import remove_context_features, remove_std_dvt_context, calc_distance_parameter
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, root_mean_squared_error
 from sklearn.metrics import precision_score
 
 
-TEST_DATA = "slow.csv"
+# TEST_DATA = "designs_slow.csv"
+TEST_DATA = "labels_slow.csv"
 def build_df_imported(pred_results, X_test, actual_results =  None):
     if actual_results is not None:
         y_test = list(actual_results)
@@ -36,10 +37,10 @@ def build_df_imported(pred_results, X_test, actual_results =  None):
         small_error = small_error.iloc[small_error.shape[0]-1]['error']
 
         (ML_MAE, ML_MSE, OPL_MAE, OPL_MSE, MAE_DIFF, MSE_DIFF, R2_SCORE, ML_pcorr,
-         ML_p_value) = data_visualization(pred_dataframe, X_test, y_test, False)
+         ML_p_value, OPL_RMSE, ML_RMSE) = data_visualization(pred_dataframe, X_test, y_test, False)
         low_error,rows_removed = data_filtered_low_error(pred_dataframe)
         (ML_MAE_f, ML_MSE_f, OPL_MAE_f, OPL_MSE_f, MAE_DIFF_f, MSE_DIFF_f, R2_SCORE_f, ML_pcorr_f,
-         ML_p_value_f) = data_visualization(low_error, X_test, y_test, False)
+         ML_p_value_f, OPL_RMSE_f, ML_RMSE_f) = data_visualization(low_error, X_test, y_test, False)
 
         new_row = pd.DataFrame({"Biggest 4000th error" : [large_error],
                                 "Smallest 50kth error": [small_error]})
@@ -61,9 +62,12 @@ def build_df_imported(pred_results, X_test, actual_results =  None):
         # results_df = pd.concat([df2, result_unfiltered], axis=1)
         # results_df = pd.concat([results_df, result_filtered], axis=1)
 
-        return large_error, small_error, ML_MAE, ML_MSE, OPL_MAE, OPL_MSE, MAE_DIFF, MSE_DIFF, R2_SCORE, ML_pcorr, ML_p_value, ML_MAE_f, ML_MSE_f, OPL_MAE_f, OPL_MSE_f, MAE_DIFF_f, MSE_DIFF_f, R2_SCORE_f, ML_pcorr_f, ML_p_value_f, rows_removed
+        return large_error, small_error, ML_MAE, ML_MSE, OPL_MAE, OPL_MSE, MAE_DIFF, MSE_DIFF, R2_SCORE, ML_pcorr, ML_p_value, ML_MAE_f, ML_MSE_f, OPL_MAE_f, OPL_MSE_f, MAE_DIFF_f, MSE_DIFF_f, R2_SCORE_f, ML_pcorr_f, ML_p_value_f, rows_removed, OPL_RMSE, ML_RMSE, OPL_RMSE_f, ML_RMSE_f
 def build_df_native():
-    X_train, X_test, y_train, y_test = readcsv_p("slow.csv", 0)
+    new_data = remove_context_features(TEST_DATA)
+    new_data = remove_std_dvt_context(new_data)
+    new_data = calc_distance_parameter(new_data)
+    X_train, X_test, y_train, y_test = readcsv_p(new_data, 0)
 
     with open("hb_instance2.pk1", "rb") as input_file:
         hb = pickle.load(input_file)
@@ -74,9 +78,14 @@ def build_df_native():
     pred_dataframe["y_test"] = pred_dataframe['idx on X_test'].apply(lambda x: y_test[int(x)])
     pred_dataframe['error'] = abs(pred_dataframe['y_test'] - pred_dataframe['y_pred'])
     pd.set_option('display.float_format', '{:.3f}'.format)
+    design_column = pd.read_csv('design_column.csv')
+    pred_dataframe['Design'] = design_column
 
     # print(pred_dataframe)
     # y_pred = pred_dataframe['y_pred']
+    pred_dataframe = pred_dataframe[pred_dataframe['Design'] == 's15850']
+    print("====================")
+    print(f"pred dataframe {pred_dataframe}")
 
     return pred_dataframe, X_test, y_test
 
@@ -121,6 +130,7 @@ def data_visualization(pred_dataframe, X_test, y_test, plots_enable):
     ML_MSE = mean_squared_error(pred_dataframe['y_test'], pred_dataframe['y_pred'])
     OPL_MAE = mean_absolute_error(pred_dataframe['y_test'], pred_dataframe['opl_pred'])
     OPL_MSE = mean_squared_error(pred_dataframe['y_test'], pred_dataframe['opl_pred'])
+
     R2_SCORE = r2_score(pred_dataframe['y_test'], pred_dataframe['y_pred'])
 
     ML_pcorr, ML_p_value = pearsonr(pred_dataframe['y_test'], pred_dataframe['y_pred'])
@@ -128,11 +138,15 @@ def data_visualization(pred_dataframe, X_test, y_test, plots_enable):
 
     # OPL_delay = X_test[' Delay']
     # ML_MAE = mean_absolute_error(pred_dataframe['y_test'], pred_dataframe['y_pred'])
-    # OPL_RMSE = root_mean_squared_error(OPL_delay, pred_dataframe['y_test'])
+    OPL_RMSE = root_mean_squared_error(pred_dataframe['y_test'], pred_dataframe['opl_pred'])
     ML_RMSE = root_mean_squared_error(pred_dataframe['y_test'], pred_dataframe['y_pred'])
     MAE_DIFF = OPL_MAE - ML_MAE
     MSE_DIFF = OPL_MSE - ML_MSE
     # OPL_pcorr, OPL_p_value = pearsonr(pred_dataframe['y_test'], OPL_delay)
+    print(f"ML RMSE {ML_RMSE}, OPL RMSE {OPL_RMSE}")
+    print(f"ML MAE {ML_MAE}, OPL MAE {OPL_MAE}")
+    print(f"ML CORR {ML_pcorr} ML P value {ML_p_value}, OPL CORR {OPL_pcorr} OPL P value {OPL_p_value}")
+    print(f"R2 SCORE {R2_SCORE}")
 
 
     # print(f"\tOPL_RMSE: {OPL_RMSE}")
@@ -188,15 +202,15 @@ def data_visualization(pred_dataframe, X_test, y_test, plots_enable):
     new_row_df = pd.DataFrame([new_row])
     df = pd.concat([df, new_row_df], ignore_index=True)
 
-    return ML_MAE, ML_MSE, OPL_MAE, OPL_MSE, MAE_DIFF, MSE_DIFF, R2_SCORE, ML_pcorr, ML_p_value
+    return ML_MAE, ML_MSE, OPL_MAE, OPL_MSE, MAE_DIFF, MSE_DIFF, R2_SCORE, ML_pcorr, ML_p_value, OPL_RMSE, ML_RMSE
 
 
 
 if __name__ == "__main__":
     results_df, X_test, y_test = build_df_native()
-    filtered_df = data_filtered_low_error(results_df)
+    # filtered_df = data_filtered_low_error(results_df)
     first_data(results_df)
     print(f"Results for all predictions")
     data_visualization(results_df, X_test, y_test, True )
     print(f"Results for predictions with acceptable error")
-    data_visualization(filtered_df, X_test, y_test, True)
+    # data_visualization(filtered_df, X_test, y_test, True)
