@@ -24,7 +24,7 @@ def build_df_imported(pred_results, X_test, actual_results =  None):
         y_test = list(actual_results)
         pred_dataframe = pred_results
         pred_dataframe["y_test"] = pred_dataframe['idx on X_test'].apply(lambda x: y_test[int(x)])
-        pred_dataframe['error'] = abs(pred_dataframe['y_test'] - pred_dataframe['y_pred'])
+        pred_dataframe['error'] = pred_dataframe['y_test'] - pred_dataframe['y_pred']
         pd.set_option('display.float_format', '{:.3f}'.format)
 
         df2 = pd.DataFrame(columns=['Biggest 4000th error', 'Smallest 50kth error'])
@@ -76,16 +76,16 @@ def build_df_native():
 
     pred_dataframe = hb.linear_predictions
     pred_dataframe["y_test"] = pred_dataframe['idx on X_test'].apply(lambda x: y_test[int(x)])
-    pred_dataframe['error'] = abs(pred_dataframe['y_test'] - pred_dataframe['y_pred'])
+    pred_dataframe['error'] = pred_dataframe['y_test'] - pred_dataframe['y_pred']
     pd.set_option('display.float_format', '{:.3f}'.format)
     design_column = pd.read_csv('design_column.csv')
     pred_dataframe['Design'] = design_column
 
     # print(pred_dataframe)
     # y_pred = pred_dataframe['y_pred']
-    pred_dataframe = pred_dataframe[pred_dataframe['Design'] == 's15850']
-    print("====================")
-    print(f"pred dataframe {pred_dataframe}")
+    # pred_dataframe = pred_dataframe[pred_dataframe['Design'] == 's38417']
+    # print("====================")
+    # print(f"pred dataframe {pred_dataframe}")
 
     return pred_dataframe, X_test, y_test
 
@@ -159,31 +159,53 @@ def data_visualization(pred_dataframe, X_test, y_test, plots_enable):
     # print(f"\tML Pearson p value: {ML_p_value}")
 
     if plots_enable:
-        plt.scatter(pred_dataframe['y_test'], pred_dataframe['y_pred'], color='blue', label='Predictions')
-        plt.plot([min(pred_dataframe['y_test']), max(pred_dataframe['y_test'])], [min(pred_dataframe['y_pred']), max(pred_dataframe['y_pred'])], color='red', label='Ideal Fit')
-        plt.xlabel('True Values')
-        plt.ylabel('Predicted Values')
+        plt.scatter(pred_dataframe['y_test'], pred_dataframe['y_pred'], color='mediumseagreen', label='Model predictions')
+        plt.plot([min(pred_dataframe['y_test']), max(pred_dataframe['y_test'])], [min(pred_dataframe['y_pred']), max(pred_dataframe['y_pred'])], color='dimgray', label='Ideal Fit', linewidth=2)
+        plt.xlabel('Post routing result')
+        plt.ylabel('Hybrid model result')
         plt.title('True vs Predicted Values')
         plt.legend()
         plt.show()
 
-
-        # plt.hist(pred_dataframe[])
-        fig, axs = plt.subplots(1,2, figsize=(10,5))
-        axs[0].hist(pred_dataframe["y_pred"], bins=500, color='blue', edgecolor='black')
-        axs[0].set_title('Histogram of y_pred')
-        axs[0].set_xlabel('Values')
-        axs[0].set_ylabel('Frequency')
-
-        # Histogram for data2
-        axs[1].hist(pred_dataframe["error"], bins=500, color='red', edgecolor='black')
-        axs[1].set_title('Histogram for the error')
-        axs[1].set_xlabel('Values')
-        axs[1].set_ylabel('Frequency')
-
-        plt.tight_layout()  # Automatically adjust subplot parameters to give padding
+        plt.scatter(pred_dataframe['y_test'], pred_dataframe['opl_pred'], color='green',
+                    label='OpenLane predictions')
+        plt.plot([min(pred_dataframe['y_test']), max(pred_dataframe['y_test'])],
+                 [min(pred_dataframe['opl_pred']), max(pred_dataframe['opl_pred'])], color='dimgray', label='Ideal Fit',
+                 linewidth=2)
+        plt.xlabel('Post routing result')
+        plt.ylabel('OpenLane result')
+        plt.title('True vs OpenLane Predicted Values')
+        plt.legend()
         plt.show()
-        plt.clf()
+
+        opl_error = pred_dataframe["y_test"] - pred_dataframe['opl_pred']
+        plt.hist(pred_dataframe["error"], bins=100, color='mediumseagreen', alpha=0.7, label='Model error')
+        plt.hist(opl_error, bins=100, color='dimgray', alpha=0.5, label='OpenLane error')
+
+        # Add labels and title
+        plt.xlabel('Predicted Error (ns)')
+        plt.ylabel('Number of Samples')
+        plt.title('Comparison of Predicted Errors')
+        plt.legend()
+
+        # Show plot
+        plt.show()
+        # plt.hist(pred_dataframe[])
+        # fig, axs = plt.subplots(1,2, figsize=(10,5))
+        # axs[0].hist(pred_dataframe["y_pred"], bins=500, color='blue', edgecolor='black')
+        # axs[0].set_title('Histogram of y_pred')
+        # axs[0].set_xlabel('Values')
+        # axs[0].set_ylabel('Frequency')
+        #
+        # # Histogram for data2
+        # axs[1].hist(pred_dataframe["error"], bins=500, color='red', edgecolor='black')
+        # axs[1].set_title('Histogram for the error')
+        # axs[1].set_xlabel('Values')
+        # axs[1].set_ylabel('Frequency')
+        #
+        # plt.tight_layout()  # Automatically adjust subplot parameters to give padding
+        # plt.show()
+        # plt.clf()
 
     df = pd.DataFrame(columns=['MAE linear reg', 'MSE linear reg', 'MAE OPL', 'MSE OPL',
 'MAE diff', 'MSE diff', 'R2', 'Pearson coeff', 'Pearson P'])
