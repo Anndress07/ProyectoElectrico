@@ -19,7 +19,9 @@ from sklearn.metrics import precision_score
 def build_df_imported(pred_results, actual_results =  None):
     if actual_results is not None:
         # y_test = list(actual_results)
+        opl_pred_column = pd.read_csv('opl_delay_column.csv')
         pred_dataframe = pred_results
+        pred_dataframe['opl_pred'] = opl_pred_column
         pred_dataframe["y_test"] = pred_dataframe['idx on X_test'].apply(lambda x: actual_results[int(x)])
         pred_dataframe['error'] = pred_dataframe['y_test'] - pred_dataframe['y_pred']
         pd.set_option('display.float_format', '{:.3f}'.format)

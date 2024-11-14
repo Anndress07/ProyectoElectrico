@@ -23,13 +23,17 @@ def readcsv_p(training_data, data_mode, test_size = None):
 
     if isinstance(training_data, pd.DataFrame):
         design_column = training_data['Design']
+        opl_delay_column = training_data[' Delay']
         training_data = training_data.drop(columns=['Design'])
+        training_data = training_data.drop(columns=[' Delay'])
         X = training_data.iloc[:, 0:training_data.shape[1]-1]
         y = training_data.iloc[:, training_data.shape[1]-1 ]
     else:
         df = pd.read_csv(training_data)
         design_column = df['Design']
+        opl_delay_column = df[' Delay']
         df = df.drop(columns=['Design'])
+        df = df.drop(columns=[' Delay'])
         # print(df.columns)
         X = df.iloc[:, 0:df.shape[1] - 1]
         y = df.iloc[:, df.shape[1] - 1]
@@ -63,6 +67,7 @@ def readcsv_p(training_data, data_mode, test_size = None):
         X_test = X_test_scaled_df
         print(f"scaled{X_test}")
     design_column.to_csv('design_column.csv', index=False)
+    opl_delay_column.to_csv('opl_delay_column.csv', index=False)
 
     print(f"desde el predict.py")
     print(f"\ttraining data: {training_data}")

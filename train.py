@@ -24,10 +24,12 @@ training_data = "slow.csv"
 #     hb = pickle.load(input_file)
 def readcsv(training_data, data_mode, training_size = None):
     if isinstance(training_data, pd.DataFrame):
+        X = training_data.drop(columns=[' Delay']) # TODO
         X = training_data.iloc[:, 0:training_data.shape[1] - 1]
         y = training_data.iloc[:, training_data.shape[1] - 1]
     else:
         df = pd.read_csv(training_data)
+        df = df.drop(columns=[' Delay'])  # TODO
         # df =df.drop(columns=['Design'])
         # print(df.columns)
         # X = df.iloc[:, 0:16]

@@ -1,18 +1,10 @@
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.ticker import StrMethodFormatter
-from sklearn.model_selection import train_test_split
-from sklearn import tree
+
 from data import remove_context_features_two, remove_std_dvt_context_two, calc_distance_parameter_two
-from sklearn.tree import DecisionTreeRegressor
-from sklearn import linear_model
+
 from train import train_method
 from predict import predict_method
 from results_run import results_method
 
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, root_mean_squared_error
-from sklearn.metrics import precision_score
 
 TRAINING_DATA = 'slow.csv'
 TRAINING_SIZE = 0.8
