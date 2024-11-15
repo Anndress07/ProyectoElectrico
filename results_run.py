@@ -1,20 +1,12 @@
 import pickle
 
-#import predict as predict
-from predict import readcsv_p
-
-import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.ticker import StrMethodFormatter
-from sklearn.model_selection import train_test_split
-from sklearn import tree
-from sklearn.tree import DecisionTreeRegressor
-from sklearn import linear_model
+import pandas as pd
 from scipy.stats import pearsonr
-from data import remove_context_features, remove_std_dvt_context, calc_distance_parameter
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, root_mean_squared_error
-from sklearn.metrics import precision_score
+
+
+# import predict as predict
 
 def build_df_imported(pred_results, actual_results =  None):
     if actual_results is not None:
@@ -25,6 +17,9 @@ def build_df_imported(pred_results, actual_results =  None):
         pred_dataframe["y_test"] = pred_dataframe['idx on X_test'].apply(lambda x: actual_results[int(x)])
         pred_dataframe['error'] = pred_dataframe['y_test'] - pred_dataframe['y_pred']
         pd.set_option('display.float_format', '{:.3f}'.format)
+        print(f"\nFrom results_run.py")
+        print(f"\tResults dataframe is: \n{pred_dataframe}")
+        print(f"\n\tAccessed OPL Delay Column from results_run: \n{opl_pred_column}")
 
     return pred_dataframe
 

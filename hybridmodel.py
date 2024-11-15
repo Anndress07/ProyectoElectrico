@@ -1,15 +1,7 @@
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-
-from sklearn.model_selection import train_test_split
-from sklearn import tree
-from sklearn.tree import DecisionTreeRegressor
 from sklearn import linear_model
 from sklearn.linear_model import Ridge
-from sklearn.linear_model import LassoCV, Lasso
-
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, root_mean_squared_error
+from sklearn.tree import DecisionTreeRegressor
 
 
 class HybridModel:
@@ -24,10 +16,10 @@ class HybridModel:
     """
 
     def __init__(self):
-        print("Running the hybrid class")
+        # print("Running the hybrid class")
         return
 
-    def fit(self, X_train, y_train, LR_type, custom_params = None):
+    def fit(self, X_train, y_train, LR_type, custom_params):
         """
         Trains the hybrid model, first creating the decision tree object using the tree() method. With the method
         classification() each sample is classified depending on the landing leaf node in the decision tree. Finally,
@@ -35,16 +27,20 @@ class HybridModel:
         used for later prediction methods.
         :param X_train: training dataset parameters
         :param y_train: training dataset outputs
-        :return decision_tree_object: the decision tree object generated in tree()
-        :return param_dict: dictionary with all samples classified by leaf node ID
-        :return LR_results: dictionary with all linear regression coefficients classified by leaf node ID
         """
-        self.decision_tree_object = self.tree(X_train, y_train, custom_params = None)
+        if custom_params is not None:
+            self.decision_tree_object = self.tree(X_train, y_train, custom_params = custom_params)
+        else:
+            self.decision_tree_object = self.tree(X_train, y_train, None)
         self.leaf_list, self.param_dict, self.output_dict = self.classification(self.decision_tree_object,
                                                                  X_train, y_train)
         self.LR_results = self.regressor(self.param_dict, self.output_dict, LR_type )
 
-        return #self.decision_tree_object, self.param_dict, self.output_dict, self.LR_results
+        print(f"\tFrom hybridmodel.fit() - Decision tree specs:")
+        print(f"\t\tMax Tree Depth: {self.decision_tree_object.max_depth}")
+        print(f"\t\tMax features: {self.decision_tree_object.max_features}")
+
+        return
 
     def predict(self, X_test):
         """
@@ -64,25 +60,16 @@ class HybridModel:
         """
         self.linear_predictions = pd.DataFrame(columns=['node_id','idx on X_test','y_pred','opl_pred'])
         if hasattr(self, 'decision_tree_object'):
-            #print("Using the decision tree object from fit()")
-            # y_pred = self.decision_tree_object.predict(X_test) # no se si esto es necesario
-
-
             self.leaf_test_list  = self.decision_tree_object.apply(X_test)
-            #print(f"leaf_test_list {self.leaf_test_list}")
+            print(f"lenght of test list {len(X_test)}")
+            print(f"lenght of apply list {len(self.leaf_test_list)}")
             for leaf_node in range(len(X_test)):
                 leaf_id_value = self.leaf_test_list[leaf_node]
-                #print(f"leaf_id_value: {leaf_id_value}")
                 for model in self.LR_results:
-
                     if model['Model: '] == leaf_id_value:
-                        #print(model['Model: '])
                         current_object = model["Object: "]
-
                         current_X = X_test.iloc[leaf_node].to_frame().T.values # w/o feature names
-                        # print(f"Current_X: {current_X}")
                         y_lr_pred = current_object.predict(current_X)
-
 
                         #### debug
                         # col_names = [' Fanout', ' Cap', ' Slew', ' Delay', 'X_drive', 'Y_drive', 'X_sink',
@@ -98,7 +85,7 @@ class HybridModel:
                                 #     f"result: {current_object.coef_[i] * current_X[0][i]:<12.2f}")
                         #print(f"y_lr_pred: {y_lr_pred}")
                         #y_lr_series = pd.Series([y_lr_pred], index=[leaf_node], name='linear predictions')
-
+                        # TODO: return a numpy array with y_pred instead
                         self.linear_predictions = self.linear_predictions._append({'node_id': model['Model: '],
                                                                                   'idx on X_test': leaf_node,
                                                                                    "y_pred": y_lr_pred[0]
@@ -117,26 +104,13 @@ class HybridModel:
         Builds the initial decision tree used for sample classification
         :param training_data: dataset to train the tree
         :return dtr: the decision tree object
-        :X_test: test dataset
-        y_test: test output variable
         """
-
-        # df = pd.read_csv(training_data)
-        # X = df.iloc[:, 0:16]
-        # y = df.iloc[:, 16]
-        #
-        # X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10, test_size=0.5)
-
         if custom_params is None:
             self.dtr = DecisionTreeRegressor(max_depth=9, max_features=15, random_state=10)
         else:
             self.dtr = DecisionTreeRegressor(max_depth=custom_params[0], max_features=custom_params[1])
 
         self.dtr.fit(X_train, y_train)
-
-        # y_pred = dtr.predict(X_test)
-        # y_pred_train = dtr.predict(X_train)
-
         return self.dtr
 
     def classification(self, dtr, X_train, y_train):
@@ -166,6 +140,7 @@ class HybridModel:
             self.leaf_params_dict[leaf_id_value].append(X_train.iloc[leaf_node].tolist())
             self.leaf_result_dict[leaf_id_value].append(y_train.iloc[leaf_node])
 
+        ### DEBUG
         # nodo_prueba_x = []
         # for leaf_node in range(len(X_test)):
         #     if leaf_sample_list[leaf_node] == 598:
@@ -192,7 +167,7 @@ class HybridModel:
         """
         self.LR_results = []
         counter_progress = 1
-        print(f"Linear type is {linear_type}")
+        # print(f"Linear type is {linear_type}")
         for key, val in leaf_params_dict.items():
             # print(f"Executing n#{counter_progress} out of {len(leaf_params_dict)}")
             # print(f"Node ID: {key} \t\t Value: ", end='')
@@ -210,36 +185,14 @@ class HybridModel:
                 X_LR = leaf_params_dict[key]
                 y_LR = leaf_result_dict[key]
 
-                #X_LR_train, X_LR_test, y_LR_train, y_LR_test = train_test_split(X_LR, y_LR, test_size=0.2,
-                #                                                                random_state=1)
-                # print(f"-------------- linear type: {linear_type}")
                 if linear_type == 0:
                     LR = linear_model.LinearRegression()
-                    # print("Traditional linear regressor was used")
                 elif linear_type == 1:
                     LR = Ridge(alpha=1.0)
-                    # LR = LassoCV( max_iter=10000, tol=0.001, cv=2)
-                    # print("Ridge linear regressor was used")
-                    # LR = linear_model.Lasso(alpha=10000, max_iter=100000, tol=0.1)
-
-                #OPL_delay = [sublist[3] for sublist in X_LR_test]
 
                 LR.fit(X_LR, y_LR)
-                # LR_pred = LR.predict(X_LR_test)
-                # (prediccion de openlane) para ver si la del modelo puede ser menor a la de openlane
-
-
-                resultado_LR = {"Model: ": key,
-                                "Object: ": LR
-                                #"Intercept: ": LR.intercept_,
-                                # "Score: ": r2_score(y_LR_test, LR_pred),
-                                #"RMSE ML: ": root_mean_squared_error(y_LR_test, LR_pred),
-                                #"RMSE OpenLane: ": root_mean_squared_error(OPL_delay, y_LR_test)
-                                }
+                resultado_LR = {"Model: ": key,"Object: ": LR}
                 self.LR_results.append(resultado_LR)
-            # else:
-            #
-            #     self.LR_results.append(0)
-            #     print("Skipped one element in linear regression")
+
 
         return self.LR_results

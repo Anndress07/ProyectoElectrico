@@ -1,40 +1,43 @@
 import pickle
 
 import pandas as pd
-from data import remove_context_features, remove_std_dvt_context, calc_distance_parameter
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.ticker import StrMethodFormatter
 from sklearn.model_selection import train_test_split
-from sklearn import tree
-from sklearn.tree import DecisionTreeRegressor
-from sklearn import linear_model
 
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, root_mean_squared_error
-from sklearn.metrics import precision_score
-FULL_FILES = True
-# test_data = "designs_slow.csv"
-test_data = "labels_slow.csv"
+from data import remove_context_features, remove_std_dvt_context, calc_distance_parameter
+
+
+
+
+pd.set_option('display.max_columns', None)
+pd.set_option('display.width', 0)
 with open("hb_instance2.pk1", "rb") as input_file:
     hb = pickle.load(input_file)
 
 
 def readcsv_p(training_data, data_mode, test_size = None):
+    """
+    Reads the CSV and outputs the X_test and y_test datasets. Performs data
+    scaling if needed.
 
+    :param training_data: training dataset
+    :param data_mode: Data scaling to be applied
+            0: No data scaling
+            1: Standardization
+            2: Normalization
+    :param test_size: Specifies the percentage of the testing_data to be utilized for the testing
+    of the model
+    :return: X_test, y_test
+    """
     if isinstance(training_data, pd.DataFrame):
         design_column = training_data['Design']
-        opl_delay_column = training_data[' Delay']
         training_data = training_data.drop(columns=['Design'])
-        training_data = training_data.drop(columns=[' Delay'])
         X = training_data.iloc[:, 0:training_data.shape[1]-1]
         y = training_data.iloc[:, training_data.shape[1]-1 ]
     else:
         df = pd.read_csv(training_data)
+        # print(f"\nFrom predict.py \n\tDataset w/o modifications is: \n{df}")
         design_column = df['Design']
-        opl_delay_column = df[' Delay']
         df = df.drop(columns=['Design'])
-        df = df.drop(columns=[' Delay'])
-        # print(df.columns)
         X = df.iloc[:, 0:df.shape[1] - 1]
         y = df.iloc[:, df.shape[1] - 1]
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10, test_size=0.2)
@@ -42,88 +45,67 @@ def readcsv_p(training_data, data_mode, test_size = None):
     if test_size is not None:
             X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10, test_size=0.9)
 
-    # if FULL_FILES:
-    #     X_test = X
-    #     y_test = y
-    #     X_train, y_train = None, None
-    pd.set_option('display.max_columns', None)
+    opl_delay_column = X_test[' Delay']     # TODO: remove this
+    X_test = X_test.drop(columns=[' Delay'])
 
-    #print(f"y_Test {y_test}")
-    #print(f"x_Test: {X_test}")
-    # y_test = y_test.head(10000)
-    # X_test = X_test.head(10000)
-    #y_test = y_test.iloc[[23960, 25870, 56097]]
-    #X_test = X_test.iloc[[23960, 25870, 56097]]
-    # pd.set_option('display.max_columns', None)
-    # print(f"y_Test {y_test}")
-    # print(f"x_Test: {X_test}")
-
+    # if the data has scaling
     if (data_mode == 1 or data_mode == 2):
         with open('scaler.pkl', 'rb') as f:
             scaler = pickle.load(f)
         X_test_scaled = scaler.transform(X_test)
-        # X_test_scaled = scaler.fit_transform(X_train)
         X_test_scaled_df = pd.DataFrame(X_test_scaled, columns=X_test.columns)
         X_test = X_test_scaled_df
-        print(f"scaled{X_test}")
+
     design_column.to_csv('design_column.csv', index=False)
     opl_delay_column.to_csv('opl_delay_column.csv', index=False)
 
-    print(f"desde el predict.py")
-    print(f"\ttraining data: {training_data}")
-    print(f"dataframe: {df}")
-    print(f"\tX_test:\n {X_test}")
+
+    # print(f"\nFrom predict.py")
+    # print(f"\tData frame post modifications is: \n{df}")
+    # print(f"\tOpenlane Delay column is: \n{opl_delay_column}")
 
     return X_train, X_test, y_train, y_test
 
 
 
 def predict_method(TESTING_DATA, TESTING_SIZE, data_scaling):
+    """
+    Accesses the predict() method from the HybridModel.
+
+    :param TESTING_DATA: Testing dataset
+    :param TESTING_SIZE: Percentage of TESTING_DATA to be used for testing of the model
+    :param data_scaling: Type of data scaling to be applied.
+            0: No data scaling
+            1: Standardization
+            2: Normalization
+    """
     with open("hb_instance2.pk1", "rb") as input_file:
         hb = pickle.load(input_file)
     X_train, X_test, y_train, y_test = readcsv_p(TESTING_DATA, data_scaling, TESTING_SIZE)
-    print(f"------------------------------------")
-    print(f"{X_train}")
+
     y_lr_pred = hb.predict(X_test)
 
     with open("hb_instance2.pk1", "wb") as output_file:
         pickle.dump(hb, output_file)
-    print("Predict executed directly")
+    # print("Predict executed directly")
 
     return y_test
 
 if __name__ == "__main__":
-    new_data = remove_context_features(test_data)
-    new_data = remove_std_dvt_context(new_data)
-    new_data = calc_distance_parameter(new_data)
-    X_train, X_test, y_train, y_test = readcsv_p(new_data, 0)
+    """
+        When the predict.py is accesed directly, parameters have to be passed from here
+        """
+    test_data = "labels_slow.csv"
+    test_data = remove_context_features(test_data)
+    test_data = remove_std_dvt_context(test_data)
+    test_data = calc_distance_parameter(test_data)
+    X_train, X_test, y_train, y_test = readcsv_p(test_data, 0)
 
 
     y_lr_pred = hb.predict(X_test)
 
     with open("hb_instance2.pk1", "wb") as output_file:
         pickle.dump(hb, output_file)
-    print("Predict executed directly")
+    # print("Predict executed directly")
 
 
-
-# print("se ejecuto el predict")
-
-
-
-
-
-# TESTING
-# # test de data
-# for model in hb.leaf_params_dict:
-#     if model == 660:
-#         nodo_prueba_x = hb.leaf_params_dict[model]
-#         print(f"model 660: {hb.leaf_params_dict[660]}")
-# for model in hb.leaf_result_dict:
-#     if model == 660:
-#         nodo_prueba_y = hb.leaf_result_dict[model]
-#         print(f"model 660: {hb.leaf_result_dict[660]}")
-# nodo_prueba_x = pd.DataFrame(nodo_prueba_x)
-# nodo_prueba_x['16'] = nodo_prueba_y
-# #print(nodo_prueba_x)
-# nodo_prueba_x.to_csv('prueba_lnr.csv', index=False)
