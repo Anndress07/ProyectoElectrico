@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from sklearn import linear_model
 from sklearn.linear_model import Ridge
@@ -58,7 +59,8 @@ class HybridModel:
         :param X_test: training/to predict dataset parameters
         :return linear_predictions: DataFrame that contains each prediction value of X_test
         """
-        self.linear_predictions = pd.DataFrame(columns=['node_id','idx on X_test','y_pred','opl_pred'])
+        # self.linear_predictions = pd.DataFrame(columns=['node_id','idx on X_test','y_pred','opl_pred'])
+        self.linear_predictions = []
         if hasattr(self, 'decision_tree_object'):
             self.leaf_test_list  = self.decision_tree_object.apply(X_test)
             print(f"lenght of test list {len(X_test)}")
@@ -86,12 +88,14 @@ class HybridModel:
                         #print(f"y_lr_pred: {y_lr_pred}")
                         #y_lr_series = pd.Series([y_lr_pred], index=[leaf_node], name='linear predictions')
                         # TODO: return a numpy array with y_pred instead
-                        self.linear_predictions = self.linear_predictions._append({'node_id': model['Model: '],
-                                                                                  'idx on X_test': leaf_node,
-                                                                                   "y_pred": y_lr_pred[0]
-                                                                                   ,"opl_pred": current_X[0][3]
-                                                                                   },
-                                                                                  ignore_index= True)
+                        self.linear_predictions.append(y_lr_pred[0])
+                        # self.linear_predictions = np.array(self.linear_predictions)
+                        # self.linear_predictions = self.linear_predictions._append({'node_id': model['Model: '],
+                        #                                                           'idx on X_test': leaf_node,
+                        #                                                            "y_pred": y_lr_pred[0]
+                        #                                                            ,"opl_pred": current_X[0][3]
+                        #                                                            },
+                        #                                                           ignore_index= True)
                         #print("===================================\n\n")
         else:
             print("Error: fit() must be called before predict()")

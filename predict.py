@@ -46,7 +46,8 @@ def readcsv_p(training_data, data_mode, test_size = None):
             X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10, test_size=0.9)
 
     opl_delay_column = X_test[' Delay']     # TODO: remove this
-    X_test = X_test.drop(columns=[' Delay'])
+    # X_test = X_test.drop(columns=[' Delay'])
+    X_test = X_test.drop(columns=['Drive_cell_size', 'Sink_cell_size'])
 
     # if the data has scaling
     if (data_mode == 1 or data_mode == 2):

@@ -8,18 +8,23 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, r
 
 # import predict as predict
 
-def build_df_imported(pred_results, actual_results =  None):
-    if actual_results is not None:
-        # y_test = list(actual_results)
-        opl_pred_column = pd.read_csv('opl_delay_column.csv')
-        pred_dataframe = pred_results
-        pred_dataframe['opl_pred'] = opl_pred_column
-        pred_dataframe["y_test"] = pred_dataframe['idx on X_test'].apply(lambda x: actual_results[int(x)])
-        pred_dataframe['error'] = pred_dataframe['y_test'] - pred_dataframe['y_pred']
-        pd.set_option('display.float_format', '{:.3f}'.format)
-        print(f"\nFrom results_run.py")
-        print(f"\tResults dataframe is: \n{pred_dataframe}")
-        print(f"\n\tAccessed OPL Delay Column from results_run: \n{opl_pred_column}")
+def build_df_imported(pred_dataframe):
+    # if actual_results is not None:
+    # y_test = list(actual_results)
+    opl_pred_column = pd.read_csv('opl_delay_column.csv')
+    design_column = pd.read_csv('design_column.csv')
+    print(f"opl pred column {opl_pred_column}")
+
+    pred_dataframe['opl_pred'] = opl_pred_column
+    pred_dataframe['design'] = design_column
+    # pred_dataframe["y_test"] = pred_dataframe['idx on X_test'].apply(lambda x: actual_results[int(x)])
+    pred_dataframe['error'] = pred_dataframe['y_test'] - pred_dataframe['y_pred']
+    pd.set_option('display.float_format', '{:.3f}'.format)
+
+    pred_dataframe = pred_dataframe[pred_dataframe['design'] == 's38417']
+    print(f"\nFrom results_run.py")
+    print(f"\tResults dataframe is: \n{pred_dataframe}")
+    print(f"\n\tAccessed OPL Delay Column from results_run: \n{opl_pred_column}")
 
     return pred_dataframe
 
@@ -72,17 +77,23 @@ def generate_metrics(pred_dataframe, plots_enable):
         # Show plot
         plt.show()
     metrics_dict = {
+        'ML_RMSE': ML_RMSE,
         'ML_MAE': ML_MAE,
-        'ML_MSE': ML_MSE,
-        'OPL_MAE': OPL_MAE,
-        'OPL_MSE': OPL_MSE,
-        'MAE_DIFF': MAE_DIFF,
-        'MSE_DIFF': MSE_DIFF,
-        'R2_SCORE': R2_SCORE,
         'ML_pcorr': ML_pcorr,
-        'ML_p_value': ML_p_value,
         'OPL_RMSE': OPL_RMSE,
-        'ML_RMSE': ML_RMSE
+        'OPL_MAE': OPL_MAE,
+        'OPL_pcorr': OPL_pcorr
+
+
+        # 'ML_MSE': ML_MSE,
+        #
+        # 'OPL_MSE': OPL_MSE,
+        # 'MAE_DIFF': MAE_DIFF,
+        # 'MSE_DIFF': MSE_DIFF,
+        # 'R2_SCORE': R2_SCORE,
+        # 'ML_p_value': ML_p_value,
+
+
     }
     print(metrics_dict)
     return metrics_dict
@@ -93,8 +104,10 @@ def results_method(y_test, plots_enable):
 
     y_test = list(y_test)
 
-    pred_dataframe = hb.linear_predictions
-    pred_dataframe = build_df_imported(pred_dataframe, y_test)
+    y_pred = hb.linear_predictions
+    pred_dataframe = pd.DataFrame({"y_pred": y_pred, "y_test": y_test})
+    print(pred_dataframe)
+    pred_dataframe = build_df_imported(pred_dataframe)
     generate_metrics(pred_dataframe, plots_enable)
 
 

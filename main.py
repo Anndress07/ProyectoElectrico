@@ -19,7 +19,7 @@ distance_parameter = True
 LR_type = 1
 data_scaling = 0
 
-plots_enable = True
+plots_enable = False
 
 def main():
     print(f"Hybrid model executed from main.py")

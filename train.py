@@ -23,12 +23,14 @@ def readcsv(training_data, data_mode, training_size = None):
     """
 
     if isinstance(training_data, pd.DataFrame):
-        X = training_data.drop(columns=[' Delay']) # TODO remove this
+        # X = training_data.drop(columns=[' Delay']) # TODO remove this
+        X = training_data.drop(columns=['Drive_cell_size', 'Sink_cell_size'])  # TODO remove this
         X = training_data.iloc[:, 0:training_data.shape[1] - 1]
         y = training_data.iloc[:, training_data.shape[1] - 1]
     else:
         df = pd.read_csv(training_data)
-        df = df.drop(columns=[' Delay'])  # TODO remove this
+        # df = df.drop(columns=[' Delay'])  # TODO remove this
+        df = df.drop(columns=['Drive_cell_size', 'Sink_cell_size'])
         X = df.iloc[:, 0:df.shape[1] - 1]
         y = df.iloc[:, df.shape[1] - 1]
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=10, test_size=0.2)
