@@ -9,6 +9,7 @@ This project heavily relies on the open source, RTL-to-GDSII tool [OpenLane](htt
 
 ## Usage
 
+
 To use the model, simply access the `main.py` and run it. The model's parameters can be modified by editing lines `9-25` of the main file. You will need data to train and test the model
 
 
@@ -60,6 +61,13 @@ plots_enable = True
 
 </details>
 
+You can also run the model directly similar to a Scikit implementation
+``` python
+hb = HybridModel()  # class instance of the hybrid model
+hb.fit(X_train, y_train, LR_type, [MAX_TREE_DEPTH, MAX_TREE_FEATURES]) # Use fit() method to train the hybrid model
+y_lr_pred = hb.predict(X_test) # get y_pred using predict() method. Outputs in a numpy array
+```
+
 ## About the data
 Datasets in the form of CSV files are needed to train and to test the model. The CSV file is formatted as
 
@@ -72,6 +80,17 @@ Datasets in the form of CSV files are needed to train and to test the model. The
 </div>
 
 Where `Label Delay` is the target variable and must be the last column of the dataframe.
+
+File `Data.py` prepares the CSVs, including removal of NaN, unnecesary parameters, and filtering results for a specific corner of the process (fast, typical, slow). This file also contains functions to alter training and testing datasets, when feature engineering is performed. 
+
+## About the hybrid model 
+
+For the training, the decision tree classifies each sample in a specific leaf node. After all the samples are classified, a linear regression is fitted for every leaf node, using the data only local to that very node. 
+
+When a new sample is to be predicted, the decision tree classifies it in a node, then, that node uses its previously fitted LR object to make a prediction depending on the sample. 
+For the implementation of the model in file `hybridmodel.py`, Scikit's DecisionTreeRegressor and LinearRegressor classes are used. 
+
+
 
 
 
