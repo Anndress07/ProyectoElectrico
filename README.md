@@ -90,6 +90,8 @@ For the training, the decision tree classifies each sample in a specific leaf no
 When a new sample is to be predicted, the decision tree classifies it in a node, then, that node uses its previously fitted LR object to make a prediction depending on the sample. 
 For the implementation of the model in file `hybridmodel.py`, Scikit's DecisionTreeRegressor and LinearRegressor classes are used. 
 
+If you want to learn more about the model itself, or see the results it provides, check `article->hybridMachineLearningModel.pdf`
+
 
 
 
