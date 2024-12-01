@@ -1,3 +1,20 @@
+"""
+File: main.py
+Description: Executes a full run of the model, including
+            training, testing, and results viewer. 
+            Model parameters are modified in this file.
+
+Author: Anndress07    
+Last update: 1/12/2024
+
+Dependencies:
+    - CSV of the training data
+    - CSV of the testing data
+
+Usage:
+           $ python main.py
+"""
+
 from data import remove_context_features_two, remove_std_dvt_context_two, calc_distance_parameter_two
 from train import train_method
 from predict import predict_method
