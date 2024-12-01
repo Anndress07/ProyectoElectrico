@@ -1,3 +1,16 @@
+"""
+File: data.py
+Description: Contains functions to clean and treat the data,
+             also to do some feature engineering.
+
+Author: Anndress07    
+Last update: 1/12/2024
+
+Usage:
+            Specify which function to call at the end of the code. 
+"""
+
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
