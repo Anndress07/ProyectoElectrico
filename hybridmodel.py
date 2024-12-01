@@ -1,3 +1,16 @@
+"""
+File: hybridmodel.py
+Description: Contains the hybrid model class, including
+            methods for training and prediction. 
+            
+
+Author: Anndress07    
+Last update: 1/12/2024
+
+Usage:
+            Accessed by main.py
+"""
+
 import numpy as np
 import pandas as pd
 from sklearn import linear_model
