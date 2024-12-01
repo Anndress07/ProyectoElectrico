@@ -1,3 +1,14 @@
+"""
+File: results_run.py
+Description: Calculates and displays result metrics of the model.
+
+Author: Anndress07    
+Last update: 1/12/2024
+
+Usage:
+            Accessed by main.py
+"""
+
 import pickle
 
 import matplotlib.pyplot as plt
