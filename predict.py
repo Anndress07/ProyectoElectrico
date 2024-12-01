@@ -1,3 +1,15 @@
+"""
+File: train.py
+Description: Executes methods related to the prediction
+            of the model. 
+
+Author: Anndress07    
+Last update: 1/12/2024
+
+Usage:
+            Accessed by main.py
+"""
+
 import pickle
 
 import pandas as pd
